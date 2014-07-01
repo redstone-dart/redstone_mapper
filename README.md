@@ -6,7 +6,7 @@ redstone_mapper is set of utilities for handling common tasks in web application
 * Encoding and decoding of objects to JSON.
 * Data validation.
 * Database connection management.
-* Decoding of database objects to Dart objects.
+* Encoding and decoding of objects to the database.
 
 Encoding and decoding of objects and data validation can also be used on the client side. redstone_mapper provides a pub transformer that prevents dart2js from generating a bloated javascript file.
 
@@ -143,7 +143,7 @@ class User {
 
 ```
 
-Also, if you are decoding an object from the database, you can use the `model`
+Also, if you are encoding or decoding an object to the database, you can use the `model`
 parameter to map a class member to its corresponding database field:
 
 ```dart
@@ -282,8 +282,14 @@ call `getMapperPlugin()`:
 import 'package:redstone/server.dart' as app;
 import 'package:redstone_mapper/plugin.dart';
 
+import 'package:redstone/server.dart' as app;
+import 'package:redstone_mapper/mapper.dart';
+import 'package:redstone_mapper/plugin.dart';
+
 main() {
 
+  //When using redstone_mapper as a Redstone.dart plugin,
+  //you can use the @Decode and @Encode annotations.
   app.addPlugin(getMapperPlugin());
   
   app.setupConsoleLog();
@@ -291,6 +297,11 @@ main() {
 }
 
 ```
+
+Also, if `getMapperPlugin()` receives an instance of `DatabaseManager`, then the plugin will manage
+the database connections for you. For more information, see one of the redstone_mapper extensions, such as
+[redstone_mapper_pg](https://github.com/luizmineo/redstone_mapper_pg) or 
+[redstone_mapper_mongo](https://github.com/luizmineo/redstone_mapper_mongo).
 
 To use with other server-side frameworks, or on the client side, you just have to import `mapper_factory.dart`
 and call `bootstrapMapper()` from the `main()` function:
@@ -310,9 +321,9 @@ main() {
 
 To encode and decode objects, you can use the `encode()` and `decode()` top level function from `mapper.dart`:
 
-```dart```dart
+```dart
 
-import 'dart:conver';
+import 'dart:convert';
 import 'package:redstone_mapper/mapper.dart';
 
 Class User {
