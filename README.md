@@ -260,7 +260,7 @@ to build a `Validator`:
 
 * `NotEmpty`:
     * If the value is a String, verify if it's not null, empty, or contains only spaces.
-    * If the value is an Iterable, verify it it's not null or empty.
+    * If the value is an Iterable, verify if it's not null or empty.
     * For other values, verify if it's not null.
 * `Range`:
     * If the value is numeric, verify if it's within the specified range.
