@@ -369,7 +369,7 @@ redstone_mapper provides integration with database drivers through extensions. C
 
 Note that redstone_mapper doesn't aim to be a full ORM/ODM framework. It just provides some helper functions to easily 
 encode and decode objects to the database. It won't generate database queries, neither hide the default driver API from you.
-That means you can use the redstone_mapper functions just when it's useful for you, and ignore it when it's just an extra overhead. 
+That means you can use the redstone_mapper functions only when it's useful for you, and ignore it when it's just an extra overhead. 
 
 #### What about other databases?
 
