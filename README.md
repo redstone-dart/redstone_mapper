@@ -1,7 +1,7 @@
 redstone_mapper
 ===============
 
-redstone_mapper is set of utilities for handling common tasks in web applications, including:
+redstone_mapper is  set of utilities for handling common tasks in web applications, including:
 
 * Encoding and decoding of objects to JSON.
 * Data validation.
