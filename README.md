@@ -1,6 +1,8 @@
 redstone_mapper
 ===============
 
+[![Build Status](https://drone.io/github.com/luizmineo/redstone_mapper/status.png)](https://drone.io/github.com/luizmineo/redstone_mapper/latest)
+
 redstone_mapper is a set of utilities for handling common tasks in web applications, including:
 
 * Encoding and decoding of objects to JSON.
