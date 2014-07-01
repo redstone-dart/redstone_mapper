@@ -439,12 +439,13 @@ void _buildChain(ClassMirror clazz, List decodeChain,
 void _decodeField(String fieldName, Field fieldInfo, List metadata, 
                   List decodeChain, DeclarationMirror mirror, TypeMirror fieldType) {
   
+  var type = fieldType.reflectedType;
   decodeChain.add((data, InstanceMirror obj, FieldDecoder fieldDecoder) {
-    _DynamicMapper mapper = _getOrCreateMapper(fieldType.reflectedType);
+    _DynamicMapper mapper = _getOrCreateMapper(type);
     try {
       var value = fieldDecoder(data, fieldName, fieldInfo, metadata);
       if (value != null) {
-        value = mapper.decoder(value, fieldDecoder, fieldType.reflectedType);
+        value = mapper.decoder(value, fieldDecoder, type);
         obj.setField(mirror.simpleName, value);
       }
     } on MapperException catch(e) {
@@ -459,18 +460,19 @@ void _decodeField(String fieldName, Field fieldInfo, List metadata,
 void _encodeField(String fieldName, Field fieldInfo, List metadata,
                   List encodeChain, DeclarationMirror mirror, TypeMirror fieldType) {
 
+  var type = fieldType.reflectedType;
   encodeChain.add((Map data, InstanceMirror obj, FieldEncoder fieldEncoder) {
     var value = obj.getField(mirror.simpleName).reflectee;
     if (value != null) {
-      var mapper = _getOrCreateMapper(value.runtimeType);
-      try {
-        fieldEncoder(data, fieldName, fieldInfo, metadata, 
-            mapper.encoder(value, fieldEncoder));
-      } on MapperException catch(e) {
-        throw e..append(new StackElement(false, fieldInfo.view));
-      } catch(e) {
-        throw new MapperException("$e")..append(new StackElement(false, fieldInfo.view));
-      }
+      var mapper = _getOrCreateMapper(type);
+      value = mapper.encoder(value, fieldEncoder);
+    }
+    try {
+      fieldEncoder(data, fieldName, fieldInfo, metadata, value);
+    } on MapperException catch(e) {
+      throw e..append(new StackElement(false, fieldInfo.view));
+    } catch(e) {
+      throw new MapperException("$e")..append(new StackElement(false, fieldInfo.view));
     }
   });
   

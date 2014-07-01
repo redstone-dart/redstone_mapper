@@ -126,9 +126,10 @@ class StaticMapperGenerator extends Transformer with ResolverTransformer {
     
     source.write("_encodeField(data, fieldName, fieldInfo, metadata, mapper, value, fieldEncoder) {\n");
     source.write("  if (value != null) {\n");
-    source.write("    fieldEncoder(data, fieldName, fieldInfo, metadata,\n");
-    source.write("                 mapper.encoder(value, fieldEncoder));\n");
+    source.write("    value = mapper.encoder(value, fieldEncoder);\n");
     source.write("  }\n");
+    source.write("  fieldEncoder(data, fieldName, fieldInfo, metadata,\n");
+    source.write("               value);\n");
     source.write("}\n\n");
     
     source.write("_decodeField(data, fieldName, fieldInfo, metadata, mapper, fieldDecoder) {\n");

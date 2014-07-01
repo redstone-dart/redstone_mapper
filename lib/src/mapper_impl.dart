@@ -8,8 +8,10 @@ final _defaultFieldDecoder = (Object encodedData, String fieldName,
 
 final _defaultFieldEncoder = (Map encodedData, String fieldName, 
                               Field fieldInfo, List metadata, Object value) {
-  var name = fieldInfo.view != null ? fieldInfo.view : fieldName;
-  encodedData[name] = value;
+  if (value != null) {
+    var name = fieldInfo.view != null ? fieldInfo.view : fieldName;
+    encodedData[name] = value;
+  }
 };
 
 class _TypeDecoder extends Converter {

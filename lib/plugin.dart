@@ -43,7 +43,7 @@ class Decode {
  * 
  *     @app.Route('/services/users/list')
  *     @Encode()
- *     listUsers() {
+ *     List<User> listUsers() {
  *       ...
  *     }
  * 
@@ -63,8 +63,8 @@ class Encode {
  * that match the pattern.
  * 
  * For more details about database integration, see the 
- * [redstone_mapper_mongo](http://pub.dartlang.org/...)
- * and [redstone_mapper_pg](http://pub.dartlang.org/...) packages.
+ * [redstone_mapper_mongo](https://github.com/luizmineo/redstone_mapper_mongo)
+ * and [redstone_mapper_pg](https://github.com/luizmineo/redstone_mapper_pg) packages.
  * 
  * Usage:
  *      
