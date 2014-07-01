@@ -363,6 +363,6 @@ That means you can use the redstone_mapper functions just when it's useful for y
 Dart already has support for several databases, including: MongoDb, Redis, CouchDb, MySql, PostgreSql, and so on. I'll try to provide new extensions over
 time, but if you are interested, you can help me on this task.
 
-Building a redstone_mapper extension is really easy. You can start by taking a look at the source code of [redstone_mapper_pg](http://...) and [redstone_mapper_mongo](http://...).
+Building a redstone_mapper extension is really easy. You can start by taking a look at the source code of [redstone_mapper_pg](https://github.com/luizmineo/redstone_mapper_pg) and [redstone_mapper_mongo](https://github.com/luizmineo/redstone_mapper_mongo).
 If you are willing to build a externsion, please let me know :)
 
