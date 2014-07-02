@@ -12,7 +12,7 @@ redstone_mapper is a set of utilities for handling common tasks in web applicati
 
 Encoding and decoding of objects and data validation can also be used on the client side. redstone_mapper provides a pub transformer that prevents dart2js from generating a bloated javascript file.
 
-Example:
+Example: Using redstone_mapper with Redstone.dart
 
 ```dart
 
@@ -376,6 +376,6 @@ That means you can use the redstone_mapper functions only when it's useful for y
 Dart already has support for several databases, including: MongoDb, Redis, CouchDb, MySql, PostgreSql, and so on. I'll try to provide new extensions over
 time, but if you are interested, you can help me on this task.
 
-Building a redstone_mapper extension is really easy. You can start by taking a look at the source code of [redstone_mapper_pg](https://github.com/luizmineo/redstone_mapper_pg) and [redstone_mapper_mongo](https://github.com/luizmineo/redstone_mapper_mongo).
+Building a redstone_mapper extension is really easy, and you can start by taking a look at the source code of [redstone_mapper_pg](https://github.com/luizmineo/redstone_mapper_pg) and [redstone_mapper_mongo](https://github.com/luizmineo/redstone_mapper_mongo).
 If you are willing to build a externsion, please let me know :)
 
