@@ -335,13 +335,12 @@ class _TypeCodecGenerator {
   }
   
   void _buildFields(StringBuffer source) {
-    var fieldsMap = {};
+    source.write("{");
     fields.where((f) => f.canEncode).forEach((f) {
-      fieldsMap[f.name] = 
-          "new FieldWrapper(${f.metadata.exps}, (obj) => obj.${f.name})";
+      source.write("'${f.name}': new FieldWrapper(${f.metadata.exps}, (obj) => obj.${f.name}), ");
     });
     
-    source.write(fieldsMap);
+    source.write("}");
   }
   
   void _buildMapper(StringBuffer source, DartType type) {
