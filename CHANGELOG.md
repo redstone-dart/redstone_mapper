@@ -1,3 +1,6 @@
+## v0.1.2
+* The `@Encode` annotation can now be used with groups. If a group is annotated with `@Encode`, then redstone_mapper will encode the response of all routes within the group.
+
 ## v0.1.1
 * Fix: transformer is generating broken code for validators.
 

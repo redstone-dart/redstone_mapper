@@ -131,7 +131,7 @@ app.RedstonePlugin getMapperPlugin([DatabaseManager db, String dbPathPattern = r
       
       return encode(response);
       
-    });
+    }, includeGroups: true);
   };
   
 }
