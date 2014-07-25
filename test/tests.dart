@@ -63,8 +63,13 @@ class TestComplexObj extends TestObj {
 
 class TestInnerObj {
   
+  String _innerObjValue;
+  
   @Field()
-  String innerObjValue;
+  String get innerObjValue => _innerObjValue;
+  
+  @Field()
+  set innerObjValue(String value) => _innerObjValue = value;
   
   bool operator == (other) {
     return other is TestInnerObj &&
@@ -90,11 +95,6 @@ class TestValidator extends Schema {
   @NotEmpty()
   bool value3;
   
-  @Field()
-  String get test => "test";
-  
-  @Field()
-  set test(String value) => null;
 }
 
 TestObj _createSimpleObj() {

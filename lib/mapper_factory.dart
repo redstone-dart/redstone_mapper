@@ -425,6 +425,7 @@ void _buildChain(ClassMirror clazz, List decodeChain,
           _encodeField(fieldName, fieldInfo, metadata,
               encodeChain, mirror, fieldType);       
         } else if (mirror.isSetter) {
+          fieldName = fieldName.substring(0, fieldName.length - 1);
           TypeMirror fieldType = mirror.parameters[0].type;
           _decodeField(fieldName, fieldInfo, metadata, 
               decodeChain, mirror, fieldType);
@@ -440,18 +441,20 @@ void _decodeField(String fieldName, Field fieldInfo, List metadata,
                   List decodeChain, DeclarationMirror mirror, TypeMirror fieldType) {
   
   var type = fieldType.reflectedType;
+  var name = new Symbol(fieldName);
+  
   decodeChain.add((data, InstanceMirror obj, FieldDecoder fieldDecoder) {
     _DynamicMapper mapper = _getOrCreateMapper(type);
     try {
       var value = fieldDecoder(data, fieldName, fieldInfo, metadata);
       if (value != null) {
         value = mapper.decoder(value, fieldDecoder, type);
-        obj.setField(mirror.simpleName, value);
+        obj.setField(name, value);
       }
     } on MapperException catch(e) {
-      throw e..append(new StackElement(false, fieldInfo.view));
+      throw e..append(new StackElement(false, fieldName));
     } catch(e) {
-      throw new MapperException("$e")..append(new StackElement(false, fieldInfo.view));
+      throw new MapperException("$e")..append(new StackElement(false, fieldName));
     }
   });
   
@@ -470,9 +473,9 @@ void _encodeField(String fieldName, Field fieldInfo, List metadata,
     try {
       fieldEncoder(data, fieldName, fieldInfo, metadata, value);
     } on MapperException catch(e) {
-      throw e..append(new StackElement(false, fieldInfo.view));
+      throw e..append(new StackElement(false, fieldName));
     } catch(e) {
-      throw new MapperException("$e")..append(new StackElement(false, fieldInfo.view));
+      throw new MapperException("$e")..append(new StackElement(false, fieldName));
     }
   });
   

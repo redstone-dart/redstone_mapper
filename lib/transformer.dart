@@ -266,6 +266,10 @@ class StaticMapperGenerator extends Transformer with ResolverTransformer {
                   .firstWhere((f) => _isFieldConstructor(f), orElse: () => null);
     if (field != null) {
       var metadata = _buildMetadata(element);
+      var name = element.displayName;
+      if (element.isSetter) {
+        name = name.substring(0, name.length - 1);
+      }
       fields.add(new _FieldInfo(element.displayName, element.type, metadata, 
                                 canDecode: element.isSetter,
                                 canEncode: element.isGetter));
