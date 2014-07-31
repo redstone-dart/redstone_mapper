@@ -1,3 +1,6 @@
+## v0.1.4
+* Widen the version constraint for `analyzer`
+
 ## v0.1.3
 * Fix: Properly handle setter methods.
 
