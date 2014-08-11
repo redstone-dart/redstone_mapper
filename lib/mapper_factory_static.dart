@@ -1,5 +1,7 @@
 library redstone_mapper_factory_static;
 
+import 'dart:convert';
+
 import 'package:redstone_mapper/mapper.dart';
 
 /**
@@ -17,11 +19,13 @@ void staticBootstrapMapper(Map<Type, TypeInfo> types) {
 
 typedef dynamic StaticDecoder(Object data, 
                               StaticMapperFactory factory, 
-                              FieldDecoder fieldDecoder);
+                              FieldDecoder fieldDecoder,
+                              Map<Type, Codec> typeCodecs);
 
 typedef dynamic StaticEncoder(Object obj, 
                               StaticMapperFactory factory, 
-                              FieldEncoder fieldEncoder);
+                              FieldEncoder fieldEncoder,
+                              Map<Type, Codec> typeCodecs);
 
 typedef dynamic StaticMapperFactory(Type type, {bool encodable, bool isList, bool isMap});
 
@@ -78,7 +82,8 @@ class _DefaultDecoder {
 
   const _DefaultDecoder();
   
-  call(Object data, FieldDecoder fieldDecoder, [Type type]) {
+  call(Object data, FieldDecoder fieldDecoder, 
+       Map<Type, Codec> typeCodecs, [Type type]) {
     return data;
   }
 
@@ -88,7 +93,7 @@ class _DefaultEncoder {
 
   const _DefaultEncoder();
   
-  call(Object obj, FieldEncoder fieldEncoder) {
+  call(Object obj, FieldEncoder fieldEncoder, Map<Type, Codec> typeCodecs) {
     return obj;
   }
 
@@ -100,7 +105,8 @@ class _MapDecoder {
   
   _MapDecoder([this.wrappedMapper]);
   
-  call(Object data, FieldDecoder fieldDecoder, [Type type]) {
+  call(Object data, FieldDecoder fieldDecoder, 
+       Map<Type, Codec> typeCodecs, [Type type]) {
     if (data is! Map) {
       throw new MapperException("Expecting Map, found ${data.runtimeType}");
     }
@@ -111,7 +117,7 @@ class _MapDecoder {
       if (mapper == null) {
         mapper = _getOrCreateMapper(type);
       }
-      decoded[key] = mapper.decoder(value, fieldDecoder);
+      decoded[key] = mapper.decoder(value, fieldDecoder, typeCodecs);
     });
     return decoded;
   }
@@ -124,7 +130,7 @@ class _MapEncoder {
   
   _MapEncoder([this.wrappedMapper]);
   
-  call(Object data, FieldEncoder fieldEncoder) {
+  call(Object data, FieldEncoder fieldEncoder, Map<Type, Codec> typeCodecs) {
     if (data is Map) {
       var encoded = {};
       var mapper = wrappedMapper;
@@ -132,7 +138,7 @@ class _MapEncoder {
         mapper = _getOrCreateMapper(data.runtimeType);
       }
       data.forEach((key, value) {
-        encoded[key] = mapper.encoder(value, fieldEncoder);
+        encoded[key] = mapper.encoder(value, fieldEncoder, typeCodecs);
       });
       return encoded;
     }
@@ -147,7 +153,8 @@ class _ListDecoder {
   
   _ListDecoder([this.wrappedMapper]);
   
-  call(Object data, FieldDecoder fieldDecoder, [Type type]) {
+  call(Object data, FieldDecoder fieldDecoder, 
+       Map<Type, Codec> typeCodecs, [Type type]) {
     if (data is! List) {
       throw new MapperException("Expecting List, found ${data.runtimeType}");
     }
@@ -157,7 +164,7 @@ class _ListDecoder {
       mapper = _getOrCreateMapper(type);
     }
     return new List.from((data as List).map((value) =>
-      mapper.decoder(value, fieldDecoder)));
+      mapper.decoder(value, fieldDecoder, typeCodecs)));
   }
   
 }
@@ -168,14 +175,14 @@ class _ListEncoder {
   
   _ListEncoder([this.wrappedMapper]);
   
-  call(Object data, FieldEncoder fieldEncoder) {
+  call(Object data, FieldEncoder fieldEncoder, Map<Type, Codec> typeCodecs) {
     if (data is List) {
       return new List.from(data.map((value) {
         var mapper = wrappedMapper;
         if (mapper == null) {
           mapper = _getOrCreateMapper(value.runtimeType);
         }
-        return mapper.encoder(value, fieldEncoder);
+        return mapper.encoder(value, fieldEncoder, typeCodecs);
       }));
     }
     return data;
@@ -201,20 +208,22 @@ _StaticMapper _getOrCreateMapper(Type type,
       var typeInfo = _staticTypeInfo[type];
       if (typeInfo != null) {
         
-        var decoder = (data, fieldDecoder, [fieldType]) {
+        var decoder = (data, fieldDecoder, typeCodecs, [fieldType]) {
           if (data is List) {
-            return new _StaticMapper.list().decoder(data, fieldDecoder, type);
+            return new _StaticMapper.list().decoder(data, fieldDecoder, 
+                typeCodecs, type);
           }
           
           try {
-            return typeInfo.decoder(data, _getOrCreateMapper, fieldDecoder);
+            return typeInfo.decoder(data, _getOrCreateMapper, fieldDecoder, typeCodecs);
           } catch(e) {
             throw new MapperException("Failed to decode: $data \nreason: $e");
           }
         };
-        var encoder = (obj, fieldEncoder) {
+        
+        var encoder = (obj, fieldEncoder, typeCodecs) {
           try {
-            return typeInfo.encoder(obj, _getOrCreateMapper, fieldEncoder);
+            return typeInfo.encoder(obj, _getOrCreateMapper, fieldEncoder, typeCodecs);
           } catch(e) {
             throw new MapperException("Can't encode $obj: $e");
           }

@@ -124,18 +124,24 @@ class StaticMapperGenerator extends Transformer with ResolverTransformer {
   
   void _writePreamble(StringBuffer source) {
     
-    source.write("_encodeField(data, fieldName, fieldInfo, metadata, mapper, value, fieldEncoder) {\n");
+    source.write("_encodeField(data, fieldName, fieldInfo, metadata,\n");
+    source.write("             mapper, value, fieldEncoder, typeCodecs, type) {\n");
     source.write("  if (value != null) {\n");
-    source.write("    value = mapper.encoder(value, fieldEncoder);\n");
+    source.write("    value = mapper.encoder(value, fieldEncoder, typeCodecs);\n");
+    source.write("    var typeCodec = typeCodecs[type];\n");
+    source.write("    value = typeCodec != null ? typeCodec.encode(value) : value;\n");
     source.write("  }\n");
     source.write("  fieldEncoder(data, fieldName, fieldInfo, metadata,\n");
     source.write("               value);\n");
     source.write("}\n\n");
     
-    source.write("_decodeField(data, fieldName, fieldInfo, metadata, mapper, fieldDecoder) {\n");
+    source.write("_decodeField(data, fieldName, fieldInfo, metadata, \n");
+    source.write("             mapper, fieldDecoder, typeCodecs, type) {\n");
     source.write("  var value = fieldDecoder(data, fieldName, fieldInfo, metadata);\n");
     source.write("  if (value != null) {\n");
-    source.write("    return mapper.decoder(value, fieldDecoder);");
+    source.write("    var typeCodec = typeCodecs[type];\n");
+    source.write("    value = typeCodec != null ? typeCodec.encode(value) : value;\n");
+    source.write("    return mapper.decoder(value, fieldDecoder, typeCodecs);");
     source.write("  }\n");
     source.write("  return null;\n");
     source.write("}\n\n");
@@ -303,33 +309,35 @@ class _TypeCodecGenerator {
   }
   
   void _buildEncoder(StringBuffer source) {
-    source.write("(obj, factory, fieldEncoder) {\n");
+    source.write("(obj, factory, fieldEncoder, typeCodecs) {\n");
     source.write("  var data = {};\n");
     
     fields.where((f) => f.canEncode).forEach((f) {
       var fieldExp = f.metadata.fieldExp;
       var exps = f.metadata.exps;
+      var typeName = _getTypeName(f.type);
       
       source.write("  _encodeField(data, '${f.name}', ${fieldExp}, ${exps}, ");
-      _buildMapper(source, f.type);
-      source.write(", obj.${f.name}, fieldEncoder);\n");
+      _buildMapper(source, f.type, typeName);
+      source.write(", obj.${f.name}, fieldEncoder, typeCodecs, $typeName);\n");
     });
     
     source.write("  return data;\n  }");
   }
   
   void _buildDecoder(StringBuffer source) {
-    source.write("(data, factory, fieldDecoder) {\n");
+    source.write("(data, factory, fieldDecoder, typeCodecs) {\n");
     source.write("  var obj = new ${className}();\n");
     source.write("  var value;\n");
     
     fields.where((f) => f.canDecode).forEach((f) {
       var fieldExp = f.metadata.fieldExp;
       var exps = f.metadata.exps;
+      var typeName = _getTypeName(f.type);
       
       source.write("  value = _decodeField(data, '${f.name}', ${fieldExp}, ${exps}, ");
-      _buildMapper(source, f.type);
-      source.write(", fieldDecoder);\n");
+      _buildMapper(source, f.type, typeName);
+      source.write(", fieldDecoder, typeCodecs, $typeName);\n");
       source.write("  if (value != null) {\n");
       source.write("     obj.${f.name} = value;\n");
       source.write("  }\n");
@@ -347,10 +355,10 @@ class _TypeCodecGenerator {
     source.write("}");
   }
   
-  void _buildMapper(StringBuffer source, DartType type) {
+  String _getTypeName(DartType type) {
     String typePrefix = "";
     String typeName;
-    
+        
     if (type.element != null) {
       typePrefix = usedLibs.resolveLib(type.element.library);
     }
@@ -360,14 +368,20 @@ class _TypeCodecGenerator {
       typeName = "${type.name}";
     }
     
+    return typeName;
+  }
+  
+  void _buildMapper(StringBuffer source, DartType type, String typeName) {
     if (type.isDynamic) {
       source.write("factory($typeName, encodable: false)");
     } else if (collectionType.isList(type)) {
       if (type.element is ParameterizedType) {
         var pType = type.element as ParameterizedType;
         if (pType.typeArguments.isNotEmpty) {
+          var paramType = pType.typeArguments[0];
+          var paramTypeName = _getTypeName(paramType);
           source.write("factory($typeName, isList: true, wrap: ");
-          _buildMapper(source, pType.typeArguments[0]);
+          _buildMapper(source, paramType, paramTypeName);
           source.write(")");
         } else {
           source.write("factory($typeName, isList: true, wrap: factory(Object))");
@@ -379,8 +393,10 @@ class _TypeCodecGenerator {
       if (type.element is ParameterizedType) {
         var pType = type.element as ParameterizedType;
         if (pType.typeArguments.isNotEmpty) {
+          var paramType = pType.typeArguments[1];
+          var paramTypeName = _getTypeName(paramType);
           source.write("factory($typeName, isMap: true, wrap: ");
-          _buildMapper(source, pType.typeArguments[1]);
+          _buildMapper(source, paramType, paramTypeName);
           source.write(")");
         } else {
           source.write("factory($typeName, isMap: true, wrap: factory(Object))");

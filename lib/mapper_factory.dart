@@ -1,5 +1,6 @@
 library redstone_mapper_factory;
 
+import 'dart:convert';
 import 'dart:mirrors';
 
 import 'package:redstone_mapper/mapper.dart';
@@ -181,7 +182,8 @@ class _DefaultDecoder {
 
   const _DefaultDecoder();
   
-  call(Object data, FieldDecoder fieldDecoder, [Type type]) {
+  call(Object data, FieldDecoder fieldDecoder, 
+       Map<Type, Codec> typeCodecs, [Type type]) {
     return data;
   }
 
@@ -191,7 +193,8 @@ class _DefaultEncoder {
 
   const _DefaultEncoder();
   
-  call(Object obj, FieldEncoder fieldEncoder) {
+  call(Object obj, FieldEncoder fieldEncoder, 
+       Map<Type, Codec> typeCodecs) {
     return obj;
   }
 
@@ -201,7 +204,8 @@ class _MapDecoder {
   
   const _MapDecoder();
   
-  call(Object data, FieldDecoder fieldDecoder, [Type type]) {
+  call(Object data, FieldDecoder fieldDecoder, 
+       Map<Type, Codec> typeCodecs, [Type type]) {
     if (data is! Map) {
       throw new MapperException("Expecting ${type}, found ${data.runtimeType}");
     }
@@ -215,7 +219,8 @@ class _MapDecoder {
     var valueType = clazz.typeArguments[1].reflectedType;
     var mapper = _getOrCreateMapper(valueType);
     (data as Map).forEach((key, value) {
-      decoded[key] = mapper.decoder(value, fieldDecoder, valueType);
+      decoded[key] = mapper.decoder(value, fieldDecoder, 
+          typeCodecs, valueType);
     });
     return decoded;
   }
@@ -226,12 +231,13 @@ class _MapEncoder {
   
   const _MapEncoder();
   
-  call(Object data, FieldEncoder fieldEncoder) {
+  call(Object data, FieldEncoder fieldEncoder, 
+       Map<Type, Codec> typeCodecs) {
     if (data is Map) {
       var encoded = {};
       data.forEach((key, value) {
         var mapper = _getOrCreateMapper(value.runtimeType);
-        encoded[key] = mapper.encoder(value, fieldEncoder);
+        encoded[key] = mapper.encoder(value, fieldEncoder, typeCodecs);
       });
       return encoded;
     }
@@ -244,7 +250,8 @@ class _ListDecoder {
   
   const _ListDecoder();
   
-  call(Object data, FieldDecoder fieldDecoder, [Type type]) {
+  call(Object data, FieldDecoder fieldDecoder, 
+       Map<Type, Codec> typeCodecs, [Type type]) {
     TypeMirror clazz = reflectType(type);
     if (data is! List) {
       if (clazz.isOriginalDeclaration) {
@@ -259,14 +266,15 @@ class _ListDecoder {
       valueType = clazz.typeArguments[0].reflectedType;
     } else {
       if (clazz.isSubtypeOf(_listMirror)) {
-        return const _DynamicMapper.notEncodable().decoder(data, fieldDecoder);
+        return const _DynamicMapper.notEncodable().decoder(data, 
+            fieldDecoder, typeCodecs);
       }
       valueType = type;
     }
     
     var mapper = _getOrCreateMapper(valueType);
     return new List.from((data as List).map((value) =>
-      mapper.decoder(value, fieldDecoder, valueType)));
+      mapper.decoder(value, fieldDecoder, typeCodecs, valueType)));
   }
   
 }
@@ -275,11 +283,11 @@ class _ListEncoder {
   
   const _ListEncoder();
   
-  call(Object data, FieldEncoder fieldEncoder) {
+  call(Object data, FieldEncoder fieldEncoder, Map<Type, Codec> typeCodecs) {
     if (data is List) {
       return new List.from(data.map((value) {
         var mapper = _getOrCreateMapper(value.runtimeType);
-        return mapper.encoder(value, fieldEncoder);
+        return mapper.encoder(value, fieldEncoder, typeCodecs);
       }));
     }
     return data;
@@ -330,9 +338,10 @@ _DynamicMapper _getOrCreateMapper(Type type) {
       
     } else {
     
-      var decoder = (data, fieldDecoder, [fieldType]) {
+      var decoder = (data, fieldDecoder, typeCodecs, [fieldType]) {
         if (data is List) {
-          return const _DynamicMapper.list().decoder(data, fieldDecoder, type);
+          return const _DynamicMapper.list().decoder(data, fieldDecoder, 
+              typeCodecs, type);
         }
         var mirror;
         try {
@@ -344,7 +353,7 @@ _DynamicMapper _getOrCreateMapper(Type type) {
         }
         
         try {
-          decodeChain.forEach((f) => f(data, mirror, fieldDecoder));
+          decodeChain.forEach((f) => f(data, mirror, fieldDecoder, typeCodecs));
         } on MapperException catch(e) {
           throw e..append(new StackElement(true, type.toString()));
         } catch(e) {
@@ -353,11 +362,11 @@ _DynamicMapper _getOrCreateMapper(Type type) {
         }
         return mirror.reflectee;
       };
-      var encoder = (obj, fieldEncoder) {
+      var encoder = (obj, fieldEncoder, typeCodecs) {
         var data = {};
         try {
           var mirror = reflect(obj);
-          encodeChain.forEach((f) => f(data, mirror, fieldEncoder));
+          encodeChain.forEach((f) => f(data, mirror, fieldEncoder, typeCodecs));
         } on MapperException catch(e) {
           throw e..append(new StackElement(true, type.toString()));
         } catch(e) {
@@ -443,12 +452,17 @@ void _decodeField(String fieldName, Field fieldInfo, List metadata,
   var type = fieldType.reflectedType;
   var name = new Symbol(fieldName);
   
-  decodeChain.add((data, InstanceMirror obj, FieldDecoder fieldDecoder) {
+  decodeChain.add((data, InstanceMirror obj, FieldDecoder fieldDecoder, 
+                   Map<Type, Codec> typeCodecs) {
     _DynamicMapper mapper = _getOrCreateMapper(type);
     try {
       var value = fieldDecoder(data, fieldName, fieldInfo, metadata);
       if (value != null) {
-        value = mapper.decoder(value, fieldDecoder, type);
+        var typeCodec = typeCodecs[type];
+        if (typeCodec != null) {
+          value = typeCodec.decode(value);
+        }
+        value = mapper.decoder(value, fieldDecoder, typeCodecs, type);
         obj.setField(name, value);
       }
     } on MapperException catch(e) {
@@ -464,12 +478,17 @@ void _encodeField(String fieldName, Field fieldInfo, List metadata,
                   List encodeChain, DeclarationMirror mirror, TypeMirror fieldType) {
 
   var type = fieldType.reflectedType;
-  encodeChain.add((Map data, InstanceMirror obj, FieldEncoder fieldEncoder) {
+  encodeChain.add((Map data, InstanceMirror obj, FieldEncoder fieldEncoder, 
+                   Map<Type, Codec> typeCodecs) {
     var value = obj.getField(mirror.simpleName).reflectee;
     if (value != null) {
       var mapper = _getOrCreateMapper(type);
-      value = mapper.encoder(value, fieldEncoder);
+      value = mapper.encoder(value, fieldEncoder, typeCodecs);
+    
+      var typeCodec = typeCodecs[type];
+      value = typeCodec != null ? typeCodec.encode(value) : value;
     }
+    
     try {
       fieldEncoder(data, fieldName, fieldInfo, metadata, value);
     } on MapperException catch(e) {

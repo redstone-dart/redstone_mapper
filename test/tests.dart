@@ -12,6 +12,7 @@ import 'package:redstone/mocks.dart';
 import 'package:redstone_mapper/plugin.dart';
 import 'redstone_service.dart';
 
+final _dateTest = DateTime.parse("2014-08-11 12:23:00");
 
 class TestObj {
   
@@ -24,17 +25,22 @@ class TestObj {
   @Field()
   bool value3;
   
+  @Field()
+  DateTime value4;
+  
   bool operator == (other) {
     return other is TestObj &&
             other.value1 == value1 &&
             other.value2 == value2 &&
-            other.value3 == value3;
+            other.value3 == value3 &&
+            other.value4 == value4;
   }
   
   String toString() => '''
     value1: $value1
     value2: $value2
     value3: $value3
+    value4: $value4
   ''';
   
 }
@@ -101,7 +107,8 @@ TestObj _createSimpleObj() {
   var obj = new TestObj()
           ..value1 = "str"
           ..value2 = 10
-          ..value3 = true;
+          ..value3 = true
+          ..value4 = _dateTest;
   return obj;
 }
 
@@ -113,6 +120,7 @@ TestComplexObj _createComplexObj() {
     ..value1 = "str"
     ..value2 = 10
     ..value3 = true
+    ..value4 = _dateTest
     ..innerObj = innerObj1
     ..innerObjs = [innerObj2, innerObj3];
   return obj;
@@ -133,7 +141,8 @@ main() {
       expect(data, equals({
         "value1": "str",
         "value2": 10,
-        "value3": true
+        "value3": true,
+        "value4": _dateTest.toIso8601String()
       }));
       
     });
@@ -148,6 +157,7 @@ main() {
         "value1": "str",
         "value2": 10,
         "value3": true,
+        "value4": _dateTest.toIso8601String(),
         "innerObj": {
           "innerObjValue": "obj1"
         },
@@ -166,7 +176,8 @@ main() {
       var expected = {
         "value1": "str",
         "value2": 10,
-        "value3": true
+        "value3": true,
+        "value4": _dateTest.toIso8601String()
       };
       
       expect(data, equals([expected, expected]));
@@ -184,7 +195,8 @@ main() {
       var data = {
         "value1": "str",
         "value2": 10,
-        "value3": true
+        "value3": true,
+        "value4": _dateTest.toIso8601String()
       };
       
       var decoded = decode(data, TestObj);
@@ -200,6 +212,7 @@ main() {
         "value1": "str",
         "value2": 10,
         "value3": true,
+        "value4": _dateTest.toIso8601String(),
         "innerObj": {
           "innerObjValue": "obj1"
         },
@@ -220,6 +233,7 @@ main() {
         "value1": "str",
         "value2": 10,
         "value3": true,
+        "value4": _dateTest.toIso8601String(),
         "innerObj": {
           "innerObjValue": "obj1"
         },

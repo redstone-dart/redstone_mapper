@@ -16,29 +16,31 @@ final _defaultFieldEncoder = (Map encodedData, String fieldName,
 
 class _TypeDecoder extends Converter {
   
-  final Type _type;
-  final FieldDecoder _fieldDecoder;
+  final Type type;
+  final FieldDecoder fieldDecoder;
+  final Map<Type, Codec> typeCodecs;
   
-  _TypeDecoder(this._fieldDecoder, [this._type]);
+  _TypeDecoder(this.fieldDecoder, {this.type, this.typeCodecs: const {} });
   
   @override
   convert(input, [Type type]) {
     if (type == null) {
-      type = _type;
+      type = this.type;
     }
     
     Mapper mapper = _mapperFactory(type);
-    return mapper.decoder(input, _fieldDecoder, type);
+    return mapper.decoder(input, fieldDecoder, typeCodecs, type);
   }
   
 }
 
 class _TypeEncoder extends Converter {
   
-  final Type _type;
-  final FieldEncoder _fieldEncoder;
+  final Type type;
+  final FieldEncoder fieldEncoder;
+  final Map<Type, Codec> typeCodecs;
   
-  _TypeEncoder(this._fieldEncoder, [this._type]);
+  _TypeEncoder(this.fieldEncoder, {this.type, this.typeCodecs: const {} });
   
   @override
   convert(input, [Type type]) {
@@ -58,15 +60,15 @@ class _TypeEncoder extends Converter {
   
   _convert(input, Type type) {
     if (type == null) {
-      if (_type == null) {
+      if (this.type == null) {
         type = input.runtimeType;
       } else {
-        type = _type;
+        type = this.type;
       }
     }
     
     Mapper mapper = _mapperFactory(type);
-    return mapper.encoder(input, _fieldEncoder);
+    return mapper.encoder(input, fieldEncoder, typeCodecs);
   }
   
 }

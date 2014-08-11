@@ -1,3 +1,6 @@
+## v0.1.5
+* Fix: when mapping json objects, redstone_mapper should handle DateTime objects as ISO 8601 strings.
+
 ## v0.1.4
 * Widen the version constraint for `analyzer`
 

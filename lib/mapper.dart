@@ -3,9 +3,10 @@ library redstone_mapper;
 import 'dart:convert';
 import 'dart:collection';
 
-part 'package:redstone_mapper/src/mapper_impl.dart';
-part 'package:redstone_mapper/src/validation_impl.dart';
-part 'package:redstone_mapper/src/metadata.dart';
+part 'src/mapper_impl.dart';
+part 'src/validation_impl.dart';
+part 'src/metadata.dart';
+part 'src/json_codec.dart';
 
 /**
  * Decode [data] to one or more objects of type [type], 
@@ -46,17 +47,8 @@ dynamic encode(dynamic input) {
   return defaultCodec.encode(input);
 }
 
-/**
- * The codec used by the [decode] and [encode] top level functions. 
- * 
- * This codec can be used to transfer objects between client and
- * server. It recursively encode objects to Maps and Lists, which
- * can be easily converted to json.
- * 
- * When using on the client side, be sure to set the redstone_mapper's
- * transformer in your pubspec.yaml.
- */
-final GenericTypeCodec defaultCodec = new GenericTypeCodec();
+///The codec used by the [decode] and [encode] top level functions. 
+GenericTypeCodec defaultCodec = jsonCodec;
 
 /**
  * Configure the mapper system.
@@ -244,14 +236,17 @@ class TypeCodec extends Codec {
   _TypeEncoder _encoder;
   
   TypeCodec(this.type, {FieldDecoder fieldDecoder, 
-                        FieldEncoder fieldEncoder}) {
+                        FieldEncoder fieldEncoder,
+                        Map<Type, Codec> typeCodecs: const {}}) {
     fieldDecoder = fieldDecoder != null ? 
         fieldDecoder : _defaultFieldDecoder;
     fieldEncoder = fieldEncoder != null ? 
         fieldEncoder : _defaultFieldEncoder;
     
-    _decoder = new _TypeDecoder(fieldDecoder, type);
-    _encoder = new _TypeEncoder(fieldEncoder, type);
+    _decoder = new _TypeDecoder(fieldDecoder, 
+        type: type, typeCodecs: typeCodecs);
+    _encoder = new _TypeEncoder(fieldEncoder, 
+        type: type, typeCodecs: typeCodecs);
   }
   
   @override
@@ -268,14 +263,15 @@ class GenericTypeCodec {
   _TypeDecoder _decoder;
   _TypeEncoder _encoder;
   
-  GenericTypeCodec({FieldDecoder fieldDecoder, FieldEncoder fieldEncoder}) {
+  GenericTypeCodec({FieldDecoder fieldDecoder, FieldEncoder fieldEncoder, 
+                    Map<Type, Codec> typeCodecs: const {}}) {
     fieldDecoder = fieldDecoder != null ? 
         fieldDecoder : _defaultFieldDecoder;
     fieldEncoder = fieldEncoder != null ? 
         fieldEncoder : _defaultFieldEncoder;
     
-    _decoder = new _TypeDecoder(fieldDecoder);
-    _encoder = new _TypeEncoder(fieldEncoder);
+    _decoder = new _TypeDecoder(fieldDecoder, typeCodecs: typeCodecs);
+    _encoder = new _TypeEncoder(fieldEncoder, typeCodecs: typeCodecs);
   }
   
   dynamic encode(dynamic input, [Type type]) {
@@ -323,11 +319,13 @@ abstract class Mapper {
 }
 
 ///decode [data] to one or more objects of type [type], using [fieldDecoder]
-///to extract field values.
-typedef dynamic MapperDecoder(Object data, FieldDecoder fieldDecoder, [Type type]);
+///and [typeCodecs] to extract field values.
+typedef dynamic MapperDecoder(Object data, FieldDecoder fieldDecoder, 
+                              Map<Type, Codec> typeCodecs, [Type type]);
 
-///encode [obj] using [fieldEncoder] to encode field values.
-typedef Map MapperEncoder(Object obj, FieldEncoder fieldEncoder);
+///encode [obj] using [fieldEncoder] and [typeCodecs] to encode field values.
+typedef Map MapperEncoder(Object obj, FieldEncoder fieldEncoder, 
+                          Map<Type, Codec> typeCodecs);
 
 /**
  * An exception generated when an object can't be encoded
