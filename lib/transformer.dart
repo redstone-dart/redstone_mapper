@@ -140,7 +140,7 @@ class StaticMapperGenerator extends Transformer with ResolverTransformer {
     source.write("  var value = fieldDecoder(data, fieldName, fieldInfo, metadata);\n");
     source.write("  if (value != null) {\n");
     source.write("    var typeCodec = typeCodecs[type];\n");
-    source.write("    value = typeCodec != null ? typeCodec.encode(value) : value;\n");
+    source.write("    value = typeCodec != null ? typeCodec.decode(value) : value;\n");
     source.write("    return mapper.decoder(value, fieldDecoder, typeCodecs);");
     source.write("  }\n");
     source.write("  return null;\n");

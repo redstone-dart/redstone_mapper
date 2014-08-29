@@ -348,7 +348,7 @@ _DynamicMapper _getOrCreateMapper(Type type) {
           mirror = clazz.newInstance(const Symbol(""), const []);
         } catch(e) {
           throw new MapperException(
-              "Can't create an instance of $type. Does $type have a default constructor?")
+              "Can't create an instance of $type. Does $type have a default constructor? Cause: $e")
               ..append(new StackElement(true, type.toString()));
         }
         

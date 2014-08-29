@@ -1,3 +1,7 @@
+## v0.1.6
+* Fix: When compiled to Javascript, redstone_mapper is not decoding DateTime objects properly.
+* Fix: redstone_mapper should not suppress error messages from the mirrors api.
+
 ## v0.1.5
 * Fix: when mapping json objects, redstone_mapper should handle DateTime objects as ISO 8601 strings.
 
