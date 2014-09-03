@@ -1,3 +1,6 @@
+## v0.1.7
+* Widen the version constraint for `code_transformers`
+
 ## v0.1.6
 * Fix: When compiled to Javascript, redstone_mapper is not decoding DateTime objects properly.
 * Fix: redstone_mapper should not suppress error messages from the mirrors api.
