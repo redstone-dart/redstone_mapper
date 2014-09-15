@@ -30,7 +30,7 @@ main() {
   app.start();
 }
 
-Class User {
+class User {
 
   //The @Field annotation is used to specify
   //the fields that can be serialized.
@@ -67,7 +67,7 @@ annotated with `@Field`.
 
 ```dart
 
-Class User {
+class User {
 
   @Field()
   String username;
@@ -215,7 +215,7 @@ if (err != null) {
 Alternatively, you can set the rules directly in the class. 
 
 ```dart
-Class User {
+class User {
    
   @Field()
   @NotEmpty()
@@ -234,7 +234,7 @@ You can also inherit from the `Schema` class, which will provide a `Validator`
 for you.
 
 ```dart
-Class User extends Schema {
+class User extends Schema {
  
   @Field()
   @NotEmpty()
@@ -247,7 +247,7 @@ Class User extends Schema {
 }
 
 ...
-User user = new User()
+var user = new User()
             ..username = "user"
             ..password = "pass";
             
@@ -328,7 +328,7 @@ To encode and decode objects, you can use the `encode()` and `decode()` top leve
 import 'dart:convert';
 import 'package:redstone_mapper/mapper.dart';
 
-Class User {
+class User {
      
   @Field()
   String username;
@@ -338,7 +338,7 @@ Class User {
 
 }
 
-User user = new User()
+var user = new User()
             ..username = "user"
             ..password = "pass";
             
