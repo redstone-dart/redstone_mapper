@@ -27,7 +27,6 @@ if [[ $? -ne 0 ]]; then
   PATH=$cs_path:$PATH
 fi
 
-ls build/test
 results=$(content_shell --dump-render-tree build/test/client_test.html 2>&1)
 echo -e "$results"
 
