@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # run server tests
-results=$(dart test/server_test.dart 2>&1)
+results=$(dart test/server/server_test.dart 2>&1)
 echo -e "$results"
 
 if [[ "$results" == *"FAIL"* ]]

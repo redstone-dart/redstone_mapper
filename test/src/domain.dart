@@ -28,6 +28,8 @@ class TestObj {
     other.value4 == value4;
   }
 
+  int get hashCode => toString().hashCode;
+
   String toString() => '''
     value1: $value1
     value2: $value2
@@ -52,6 +54,8 @@ class TestComplexObj extends TestObj {
     const ListEquality().equals(other.innerObjs, innerObjs);
   }
 
+  int get hashCode => toString().hashCode;
+
   String toString() => '''
     ${super.toString()}
     innerObj: $innerObj
@@ -73,6 +77,8 @@ class TestInnerObj {
     return other is TestInnerObj &&
     other.innerObjValue == innerObjValue;
   }
+
+  int get hashCode => toString().hashCode;
 
   String toString() => '''
     innerObjValue: $innerObjValue

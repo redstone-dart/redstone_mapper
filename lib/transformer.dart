@@ -18,8 +18,6 @@ import 'package:path/path.dart' as path;
  */ 
 class StaticMapperGenerator extends Transformer with ResolverTransformer {
   
-  final RegExp annotationRegex = new RegExp(r'@(.*?)\s');
-  
   ClassElement objectType;
   
   _CollectionType collectionType;
@@ -206,13 +204,38 @@ class StaticMapperGenerator extends Transformer with ResolverTransformer {
     }
     return fields;
   }
+
+  List<String> _extractArgs(String source, String name) {
+    source = source.substring(0, source.lastIndexOf(new RegExp("\\s$name")));
+
+    var idx = source.lastIndexOf(new RegExp("[@\)]"));
+    if (idx == -1) {
+      return [];
+    }
+
+    var char = source[idx];
+    if (char == ")") {
+      source = source.substring(0, idx + 1);
+    } else {
+      idx = source.indexOf("\s", idx);
+      source = source.substring(0, idx);
+    }
+
+    return source.split(new RegExp(r"\s@")).map((m) {
+      if (m[m.length - 1] == ")") {
+        return m.substring(m.indexOf("("));
+      }
+      return m;
+    }).toList(growable: false);
+  }
   
   bool _isFieldConstructor(ElementAnnotation m) =>
     m.element is ConstructorElement && (
         m.element.enclosingElement == fieldAnnotationClass ||
         (m.element.enclosingElement as ClassElement).allSupertypes.
         map((i) => i.element).contains(fieldAnnotationClass));
-      
+
+
   _FieldMetadata _buildMetadata(Element element) {
     String source;
     if (element is FieldElement) {
@@ -220,9 +243,8 @@ class StaticMapperGenerator extends Transformer with ResolverTransformer {
     } else {
       source = element.node.toSource();
     }
-    
-    List<String> initializers = annotationRegex.allMatches(source)
-        .map((m) => m[1]).toList(growable: false);
+
+    List<String> args = _extractArgs(source, element.displayName);
     String fieldExp;
     List<String> exps = [];
     
@@ -232,22 +254,20 @@ class StaticMapperGenerator extends Transformer with ResolverTransformer {
       if (prefix.isNotEmpty) {
         prefix += ".";
       }
+
       if (m.element is ConstructorElement) {
         var className = m.element.enclosingElement.displayName;
         var constructor = m.element.displayName;
         if (constructor.isNotEmpty) {
           constructor = ".$constructor";
         }
-        var initializer = initializers[idx];
-        var args = initializer.substring(initializer.indexOf("("));
-        var exp = "const $prefix$className$constructor$args";
-
+        var exp = "const $prefix$className$constructor${args[idx]}";
         exps.add(exp);
         if (fieldExp == null && _isFieldConstructor(m)) {
           fieldExp = exp;
         }
       } else {
-        exps.add("$prefix${initializers[idx]}");
+        exps.add("$prefix${args[idx]}");
       }
     
       idx++;
@@ -273,10 +293,14 @@ class StaticMapperGenerator extends Transformer with ResolverTransformer {
     if (field != null) {
       var metadata = _buildMetadata(element);
       var name = element.displayName;
+      var type;
       if (element.isSetter) {
         name = name.substring(0, name.length - 1);
+        type = element.type.normalParameterTypes[0];
+      } else {
+        type = element.returnType;
       }
-      fields.add(new _FieldInfo(element.displayName, element.type, metadata, 
+      fields.add(new _FieldInfo(element.displayName, type, metadata,
                                 canDecode: element.isSetter,
                                 canEncode: element.isGetter));
     }

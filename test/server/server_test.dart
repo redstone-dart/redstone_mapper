@@ -9,8 +9,8 @@ import 'package:unittest/unittest.dart';
 import 'package:redstone/server.dart' as app;
 import 'package:redstone/mocks.dart';
 import 'package:redstone_mapper/plugin.dart';
-import 'redstone_service.dart';
-import 'src/common_tests.dart';
+import '../src/redstone_service.dart';
+import '../src/common_tests.dart';
 
 main() {
   
