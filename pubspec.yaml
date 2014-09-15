@@ -11,3 +11,5 @@ dependencies:
   code_transformers: '>=0.1.6 <0.3.0'
 dev_dependencies:
   unittest: '>=0.10.0 <0.12.0'
+transformers:
+  - redstone_mapper
