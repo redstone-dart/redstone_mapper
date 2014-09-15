@@ -1,7 +1,17 @@
 #!/bin/bash
-dart test/server_test.dart
-pub build test/
 
+# run server tests
+dart test/server_test.dart
+
+#compile to javascript
+results=$(pub build test/ 2>&1)
+echo "$results"
+if [[ "$results" == *"Build failed"* ]]
+then
+  exit 1
+fi
+
+#run client tests
 which content_shell
 if [[ $? -ne 0 ]]; then
   $DART_SDK/../chromium/download_contentshell.sh
