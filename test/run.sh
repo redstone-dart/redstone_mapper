@@ -27,7 +27,7 @@ if [[ $? -ne 0 ]]; then
   PATH=$cs_path:$PATH
 fi
 
-results=$(content_shell --dump-render-tree test/client_test.html 2>&1)
+results=$(content_shell --dump-render-tree build/test/client_test.html 2>&1)
 echo -e "$results"
 
 if [[ "$results" == *"FAIL"* ]]
