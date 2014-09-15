@@ -11,6 +11,7 @@ import 'package:redstone/mocks.dart';
 import 'package:redstone_mapper/plugin.dart';
 import '../src/redstone_service.dart';
 import '../src/common_tests.dart';
+import '../src/domain.dart';
 
 main() {
   

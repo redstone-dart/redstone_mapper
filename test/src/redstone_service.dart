@@ -4,14 +4,7 @@ import 'package:redstone/server.dart' as app;
 import 'package:redstone_mapper/mapper.dart';
 import 'package:redstone_mapper/plugin.dart';
 
-class User {
-  
-  @Field()
-  String username;
-  
-  @Field()
-  String password;
-}
+import 'domain.dart';
 
 @app.Route("/service", methods: const [app.POST])
 @Encode()

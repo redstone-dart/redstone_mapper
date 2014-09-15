@@ -2,7 +2,6 @@ library domain_test;
 
 import 'package:collection/equality.dart';
 import 'package:redstone_mapper/mapper.dart';
-import 'package:redstone_mapper/mapper_factory.dart';
 
 final dateTest = DateTime.parse("2014-08-11 12:23:00");
 
@@ -98,6 +97,16 @@ class TestValidator extends Schema {
   @Field()
   @NotEmpty()
   bool value3;
+
+}
+
+class User {
+
+  @Field()
+  String username;
+
+  @Field()
+  String password;
 
 }
 
