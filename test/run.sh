@@ -10,7 +10,7 @@ then
 fi
 
 #compile to javascript
-results=$(pub build test/ 2>&1)
+results=$(pub build --mode debug test/ 2>&1)
 echo "$results"
 if [[ "$results" == *"Build failed"* ]]
 then
