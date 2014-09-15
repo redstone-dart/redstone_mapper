@@ -1,5 +1,5 @@
-#!/bin/sh
-dart test/tests.dart
+#!/bin/bash
+dart test/server_test.dart
 pub build test/
 
 which content_shell
