@@ -1,7 +1,13 @@
 #!/bin/bash
 
 # run server tests
-dart test/server_test.dart
+results=$(dart test/server_test.dart 2>&1)
+echo -e "$results"
+
+if [[ "$results" == *"FAIL"* ]]
+then
+  exit 1
+fi
 
 #compile to javascript
 results=$(pub build test/ 2>&1)
