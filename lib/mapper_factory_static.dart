@@ -46,7 +46,7 @@ class FieldWrapper {
   List metadata;
   StaticFieldGetter getter;
   
-  FieldWrapper(this.metadata, this.getter);
+  FieldWrapper(this.getter, [this.metadata = const [const Field()]]);
   
 }
 

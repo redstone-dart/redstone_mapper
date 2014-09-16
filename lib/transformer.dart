@@ -25,6 +25,8 @@ class StaticMapperGenerator extends Transformer with ResolverTransformer {
   
   final _UsedLibs usedLibs = new _UsedLibs();
   final Map<String, _TypeCodecGenerator> types = {};
+
+  String _mapperLibPrefix;
   
   StaticMapperGenerator.asPlugin(BarbackSettings settings) {
     var sdkDir = settings.configuration["dart_sdk"];
@@ -56,7 +58,8 @@ class StaticMapperGenerator extends Transformer with ResolverTransformer {
     
     objectType = resolver.getType("dart.core.Object");
     collectionType = new _CollectionType(resolver);
-    usedLibs.resolveLib(resolver.getLibraryByName("redstone_mapper"));
+    _mapperLibPrefix = usedLibs
+        .resolveLib(resolver.getLibraryByName("redstone_mapper"));
     
     resolver.libraries
       .expand((lib) => lib.units)
@@ -121,9 +124,11 @@ class StaticMapperGenerator extends Transformer with ResolverTransformer {
   }
   
   void _writePreamble(StringBuffer source) {
+
+    var defaultField = "const $_mapperLibPrefix.Field()";
     
-    source.write("_encodeField(data, fieldName, fieldInfo, metadata,\n");
-    source.write("             mapper, value, fieldEncoder, typeCodecs, type) {\n");
+    source.write("_encodeField(data, fieldName, mapper, value, fieldEncoder, typeCodecs, type, \n");
+    source.write("             [fieldInfo = $defaultField, metadata = const [$defaultField]]) {\n");
     source.write("  if (value != null) {\n");
     source.write("    value = mapper.encoder(value, fieldEncoder, typeCodecs);\n");
     source.write("    var typeCodec = typeCodecs[type];\n");
@@ -133,8 +138,8 @@ class StaticMapperGenerator extends Transformer with ResolverTransformer {
     source.write("               value);\n");
     source.write("}\n\n");
     
-    source.write("_decodeField(data, fieldName, fieldInfo, metadata, \n");
-    source.write("             mapper, fieldDecoder, typeCodecs, type) {\n");
+    source.write("_decodeField(data, fieldName, mapper, fieldDecoder, typeCodecs, type, \n");
+    source.write("             [fieldInfo = $defaultField, metadata = const [$defaultField]]) {\n");
     source.write("  var value = fieldDecoder(data, fieldName, fieldInfo, metadata);\n");
     source.write("  if (value != null) {\n");
     source.write("    var typeCodec = typeCodecs[type];\n");
@@ -245,6 +250,12 @@ class StaticMapperGenerator extends Transformer with ResolverTransformer {
     }
 
     List<String> args = _extractArgs(source, element.displayName);
+
+    //For fields with default configuration, don't generate metadata code
+    if (args.length == 1 && args[0] == "()" && element.metadata.length == 1) {
+      return null;
+    }
+
     String fieldExp;
     List<String> exps = [];
     
@@ -337,13 +348,19 @@ class _TypeCodecGenerator {
     source.write("  var data = {};\n");
     
     fields.where((f) => f.canEncode).forEach((f) {
-      var fieldExp = f.metadata.fieldExp;
-      var exps = f.metadata.exps;
       var typeName = _getTypeName(f.type);
       
-      source.write("  _encodeField(data, '${f.name}', ${fieldExp}, ${exps}, ");
+      source.write("  _encodeField(data, '${f.name}', ");
       _buildMapper(source, f.type, typeName);
-      source.write(", obj.${f.name}, fieldEncoder, typeCodecs, $typeName);\n");
+      source.write(", obj.${f.name}, fieldEncoder, typeCodecs, $typeName");
+
+      if (f.metadata != null) {
+        var fieldExp = f.metadata.fieldExp;
+        var exps = f.metadata.exps;
+        source.write(", $fieldExp, $exps");
+      }
+
+      source.write(");\n");
     });
     
     source.write("  return data;\n  }");
@@ -355,13 +372,19 @@ class _TypeCodecGenerator {
     source.write("  var value;\n");
     
     fields.where((f) => f.canDecode).forEach((f) {
-      var fieldExp = f.metadata.fieldExp;
-      var exps = f.metadata.exps;
       var typeName = _getTypeName(f.type);
       
-      source.write("  value = _decodeField(data, '${f.name}', ${fieldExp}, ${exps}, ");
+      source.write("  value = _decodeField(data, '${f.name}',");
       _buildMapper(source, f.type, typeName);
-      source.write(", fieldDecoder, typeCodecs, $typeName);\n");
+      source.write(", fieldDecoder, typeCodecs, $typeName");
+
+      if (f.metadata != null) {
+        var fieldExp = f.metadata.fieldExp;
+        var exps = f.metadata.exps;
+        source.write(", $fieldExp, $exps");
+      }
+
+      source.write(");\n");
       source.write("  if (value != null) {\n");
       source.write("     obj.${f.name} = value;\n");
       source.write("  }\n");
@@ -373,7 +396,11 @@ class _TypeCodecGenerator {
   void _buildFields(StringBuffer source) {
     source.write("{");
     fields.where((f) => f.canEncode).forEach((f) {
-      source.write("'${f.name}': new FieldWrapper(${f.metadata.exps}, (obj) => obj.${f.name}), ");
+      source.write("'${f.name}': new FieldWrapper((obj) => obj.${f.name}");
+      if (f.metadata != null) {
+        source.write(", ${f.metadata.exps}");
+      }
+      source.write("),");
     });
     
     source.write("}");
@@ -397,25 +424,25 @@ class _TypeCodecGenerator {
   
   void _buildMapper(StringBuffer source, DartType type, String typeName) {
     if (type.isDynamic) {
-      source.write("factory($typeName, encodable: false)");
+      source.write("factory(null, encodable: false)");
     } else if (collectionType.isList(type)) {
-      if (type.element is ParameterizedType) {
-        var pType = type.element as ParameterizedType;
+      if (type is ParameterizedType) {
+        var pType = type as ParameterizedType;
         if (pType.typeArguments.isNotEmpty) {
           var paramType = pType.typeArguments[0];
           var paramTypeName = _getTypeName(paramType);
-          source.write("factory($typeName, isList: true, wrap: ");
+          source.write("factory(null, isList: true, wrap: ");
           _buildMapper(source, paramType, paramTypeName);
           source.write(")");
         } else {
-          source.write("factory($typeName, isList: true, wrap: factory(Object))");
+          source.write("factory(null, isList: true, wrap: factory(Object))");
         }
       } else {
-        source.write("factory($typeName, isList: true, wrap: factory(Object))");
+        source.write("factory(null, isList: true, wrap: factory(Object))");
       }
     } else if (collectionType.isMap(type)) {
-      if (type.element is ParameterizedType) {
-        var pType = type.element as ParameterizedType;
+      if (type is ParameterizedType) {
+        var pType = type as ParameterizedType;
         if (pType.typeArguments.isNotEmpty) {
           var paramType = pType.typeArguments[1];
           var paramTypeName = _getTypeName(paramType);
@@ -423,10 +450,10 @@ class _TypeCodecGenerator {
           _buildMapper(source, paramType, paramTypeName);
           source.write(")");
         } else {
-          source.write("factory($typeName, isMap: true, wrap: factory(Object))");
+          source.write("factory(null, isMap: true, wrap: factory(Object))");
         }
       } else {
-        source.write("factory($typeName, isMap: true, wrap: factory(Object))");
+        source.write("factory(null, isMap: true, wrap: factory(Object))");
       }
     } else {
       source.write("factory($typeName)");
@@ -462,14 +489,16 @@ class _CollectionType {
   }
   
   bool isList(DartType type) =>
-    type.element is InterfaceType && 
-    (type.element as InterfaceType).element.allSupertypes
-    .map((i) => i.element).contains(listType);
+    type.element is ClassElement &&
+        (type.element == listType ||
+          (type.element as ClassElement).allSupertypes
+          .map((i) => i.element).contains(listType));
   
   bool isMap(DartType type) =>
-    type.element is InterfaceType && 
-    (type.element as InterfaceType).element.allSupertypes
-    .map((i) => i.element).contains(mapType);
+    type.element is ClassElement &&
+        (type.element == mapType ||
+          (type.element as ClassElement).allSupertypes
+          .map((i) => i.element).contains(mapType));
   
 }
 
