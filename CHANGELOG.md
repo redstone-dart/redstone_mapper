@@ -1,3 +1,13 @@
+## v0.1.8
+This release includes fixes and improvements for the client-side support (thanks to [prujohn](https://github.com/prujohn) for all the feedback):
+* Fix: Compilation errors when using the `view` or `model` parameters on fields.
+* Fix: When compiled to javascript, the mapper can't encode or decode objects with nested lists or maps.
+* Added the `encodeJson()` and `decodeJson()` top-level functions.
+* Improved error handling.
+* Improved documentation:
+     * Fixed some typos (thanks to [sethladd](https://github.com/sethladd))
+     * Added information about integration with polymer
+
 ## v0.1.7
 * Widen the version constraint for `code_transformers`
 
