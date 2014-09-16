@@ -1,5 +1,7 @@
-## v0.1.8
+## v0.1.8+1
 This release includes fixes and improvements for the client-side support (thanks to [prujohn](https://github.com/prujohn) for all the feedback):
+
+
 * Fix: Compilation errors when using the `view` or `model` parameters on fields.
 * Fix: When compiled to javascript, the mapper can't encode or decode objects with nested lists or maps.
 * Added the `encodeJson()` and `decodeJson()` top-level functions.
