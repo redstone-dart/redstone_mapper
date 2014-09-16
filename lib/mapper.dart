@@ -20,7 +20,7 @@ part 'src/json_codec.dart';
  * an object of [type]. Otherwise, if [data] is a List, then a 
  * List<[type]> will be returned.
  * 
- * For more information on how the serialization 
+ * For more information on how serialization
  * and deserialization of objects works, see [Field].
  * 
  * When using on the client side, be sure to set the redstone_mapper's
@@ -37,7 +37,7 @@ dynamic decode(dynamic data, Type type) {
  * If it's an object, then this function will return
  * a Map, otherwise a List<Map> will be returned.
  * 
- * For more information on how the serialization 
+ * For more information on how serialization
  * and deserialization of objects works, see [Field].
  * 
  * When using on the client side, be sure to set the redstone_mapper's
@@ -45,6 +45,45 @@ dynamic decode(dynamic data, Type type) {
  */ 
 dynamic encode(dynamic input) {
   return defaultCodec.encode(input);
+}
+
+/**
+ * Decode [json] to one or more objects of type [type].
+ *
+ * [json] is expected to be a JSON object, or a list of
+ * JSON objects, and [type] a class which contains members
+ * annotated with the [Field] annotation.
+ *
+ * If [json] is a JSON object, then this function will return
+ * an object of [type]. Otherwise, if [json] is a list, then a
+ * List<[type]> will be returned.
+ *
+ * For more information on how serialization
+ * and deserialization of objects works, see [Field].
+ *
+ * When using on the client side, be sure to set the redstone_mapper's
+ * transformer in your pubspec.yaml.
+ */
+dynamic decodeJson(String json, Type type) {
+  return jsonCodec.decode(JSON.decode(json), type);
+}
+
+/**
+ * Encode [input] to JSON.
+ *
+ * [input] can be an object or a List of objects.
+ * If it's an object, then this function will return
+ * a JSON object, otherwise a list of JSON objects
+ * will be returned.
+ *
+ * For more information on how serialization
+ * and deserialization of objects works, see [Field].
+ *
+ * When using on the client side, be sure to set the redstone_mapper's
+ * transformer in your pubspec.yaml.
+ */
+String encodeJson(dynamic input) {
+  return JSON.encode(jsonCodec.encode(input));
 }
 
 ///The codec used by the [decode] and [encode] top level functions. 

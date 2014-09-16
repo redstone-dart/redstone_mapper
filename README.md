@@ -321,11 +321,10 @@ main() {
 
 ```
 
-To encode and decode objects, you can use the `encode()` and `decode()` top level function from `mapper.dart`:
+To encode and decode objects, you can use the `encodeJson()` and `decodeJson()` top level function from `mapper.dart`:
 
 ```dart
 
-import 'dart:convert';
 import 'package:redstone_mapper/mapper.dart';
 
 class User {
@@ -342,7 +341,7 @@ var user = new User()
             ..username = "user"
             ..password = "pass";
             
-String userJson = JSON.encode(encode(user));
+String userJson = encodeJson(user);
 
 ```
 
@@ -359,6 +358,13 @@ transformers:
 - redstone_mapper
 
 ```
+
+### Integration with Polymer
+
+Polymer applications usually doesn't have an entry-point (a dart script with the `main` function), so
+you have to provide one. Also, the entry-point has to import all libraries that contains encodable classes, 
+so the transformer will be able to map them. You can see a working example which uses 
+polymer and redstone_mapper [here](https://github.com/luizmineo/io_2014_contacts_demo).
 
 ### Database integration
 

@@ -231,7 +231,8 @@ _StaticMapper _getOrCreateMapper(Type type,
         
         mapper = new _StaticMapper(decoder, encoder, typeInfo.fields);
       } else {
-        mapper = const _StaticMapper.notEncodable();
+        throw new MapperException("UnsupportedType: $type. "
+          "This type wasn't mapped by redstone_mapper's transformer. See http://goo.gl/YYMou2 for more information.");
       }
       _cache[type] = mapper;
     }

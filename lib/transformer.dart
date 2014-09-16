@@ -456,7 +456,11 @@ class _TypeCodecGenerator {
         source.write("factory(null, isMap: true, wrap: factory(Object))");
       }
     } else {
-      source.write("factory($typeName)");
+      if (type.element.library.isDartCore) {
+        source.write("factory(null, encodable: false)");
+      } else {
+        source.write("factory($typeName)");
+      }
     }
   }
 }
