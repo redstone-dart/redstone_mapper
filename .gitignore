@@ -3,7 +3,7 @@
 .project
 .buildlog
 .idea
-*.precompiled.js
+.pub
 *.js_
 *.js.deps
 *.js.map
@@ -11,6 +11,3 @@ build
 
 # Include when developing application packages
 pubspec.lock
-
-# Avoid committing generated JavaScript files
-*.dart.js

@@ -1,3 +1,8 @@
+## v0.1.9
+* Updated dependencies.
+
+**Note:** this version requires Dart 1.7 or above
+
 ## v0.1.8+1
 This release includes fixes and improvements for the client-side support (thanks to [prujohn](https://github.com/prujohn) for all the feedback):
 
