@@ -1,3 +1,6 @@
+## v0.1.10
+* Fix decoding of inherited properties
+
 ## v0.1.9
 * Updated dependencies.
 
