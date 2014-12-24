@@ -5,6 +5,20 @@ import 'package:redstone_mapper/mapper.dart';
 
 final dateTest = DateTime.parse("2014-08-11 12:23:00");
 
+class GenericProperty {
+
+  @Field()
+  String value;
+
+}
+
+class SpecializedProperty extends GenericProperty {
+
+  @Field()
+  String value;
+
+}
+
 class TestObj {
 
   @Field()
@@ -18,6 +32,9 @@ class TestObj {
 
   @Field()
   DateTime value4;
+
+  @Field()
+  GenericProperty property;
 
   bool operator == (other) {
     return other is TestObj &&
@@ -34,6 +51,7 @@ class TestObj {
     value2: $value2
     value3: $value3
     value4: $value4
+    property: $property
   ''';
 
 }
@@ -45,6 +63,9 @@ class TestComplexObj extends TestObj {
 
   @Field()
   List<TestInnerObj> innerObjs;
+
+  @Field()
+  SpecializedProperty property;
 
   operator == (other) {
     return other is TestComplexObj &&
@@ -59,6 +80,7 @@ class TestComplexObj extends TestObj {
     ${super.toString()}
     innerObj: $innerObj
     innerObjs: $innerObjs
+    property: $property
   ''';
 }
 
@@ -111,15 +133,20 @@ class User {
 }
 
 TestObj createSimpleObj() {
+  var p = new GenericProperty()
+    ..value = "genericProperty";
   var obj = new TestObj()
     ..value1 = "str"
     ..value2 = 10
     ..value3 = true
-    ..value4 = dateTest;
+    ..value4 = dateTest
+    ..property = p;
   return obj;
 }
 
 TestComplexObj createComplexObj() {
+  var p = new SpecializedProperty()
+    ..value = "specializedProperty";
   var innerObj1 = new TestInnerObj()..innerObjValue = "obj1";
   var innerObj2 = new TestInnerObj()..innerObjValue = "obj2";
   var innerObj3 = new TestInnerObj()..innerObjValue = "obj3";
@@ -129,6 +156,7 @@ TestComplexObj createComplexObj() {
     ..value3 = true
     ..value4 = dateTest
     ..innerObj = innerObj1
-    ..innerObjs = [innerObj2, innerObj3];
+    ..innerObjs = [innerObj2, innerObj3]
+    ..property = p;
   return obj;
 }

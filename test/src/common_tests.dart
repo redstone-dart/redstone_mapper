@@ -19,7 +19,8 @@ installCommonTests() {
           "value1": "str",
           "value2": 10,
           "value3": true,
-          "value4": dateTest.toIso8601String()
+          "value4": dateTest.toIso8601String(),
+          "property": {"value": "genericProperty"}
       }));
 
     });
@@ -41,7 +42,8 @@ installCommonTests() {
           "innerObjs": [
               {"innerObjValue": "obj2"},
               {"innerObjValue": "obj3"}
-          ]
+          ],
+          "property": {"value": "specializedProperty"}
       }));
     });
 
@@ -54,7 +56,8 @@ installCommonTests() {
           "value1": "str",
           "value2": 10,
           "value3": true,
-          "value4": dateTest.toIso8601String()
+          "value4": dateTest.toIso8601String(),
+          "property": {"value": "genericProperty"}
       };
 
       expect(data, equals([expected, expected]));
@@ -73,7 +76,8 @@ installCommonTests() {
           "value1": "str",
           "value2": 10,
           "value3": true,
-          "value4": dateTest.toIso8601String()
+          "value4": dateTest.toIso8601String(),
+          "property": {"value": "genericProperty"}
       };
 
       var decoded = decode(data, TestObj);
@@ -96,7 +100,8 @@ installCommonTests() {
           "innerObjs": [
               {"innerObjValue": "obj2"},
               {"innerObjValue": "obj3"}
-          ]
+          ],
+          "property": {"value": "specializedProperty"}
       };
 
       var decoded = decode(data, TestComplexObj);
@@ -117,7 +122,8 @@ installCommonTests() {
           "innerObjs": [
               {"innerObjValue": "obj2"},
               {"innerObjValue": "obj3"}
-          ]
+          ],
+          "property": {"value": "specializedProperty"}
       };
 
       var list = [data, data];

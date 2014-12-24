@@ -385,14 +385,19 @@ _DynamicMapper _getOrCreateMapper(Type type) {
 }
 
 void _buildChain(ClassMirror clazz, List decodeChain, 
-                 List encodeChain, Map<String, _FieldData> fields) {
+                 List encodeChain, Map<String, _FieldData> fields,
+                 [Map<String, _ChainIdx> fieldIdxs]) {
+
+  if (fieldIdxs == null) {
+    fieldIdxs = {};
+  }
   
   if(clazz.superclass != null && clazz.superclass.reflectedType != Object) {
-    _buildChain(clazz.superclass, decodeChain, encodeChain, fields);
+    _buildChain(clazz.superclass, decodeChain, encodeChain, fields, fieldIdxs);
   }
   
   clazz.superinterfaces.forEach((interface) =>
-      _buildChain(interface, decodeChain, encodeChain, fields));
+      _buildChain(interface, decodeChain, encodeChain, fields, fieldIdxs));
   
   clazz.declarations.forEach((name, mirror) {
     
@@ -406,13 +411,33 @@ void _buildChain(ClassMirror clazz, List decodeChain,
          
         var fieldName = MirrorSystem.getName(mirror.simpleName);
         fields[fieldName] = new _FieldData(mirror.simpleName, metadata);
+
+        var chainIdx = fieldIdxs[fieldName];
+        if (chainIdx == null) {
+          chainIdx = new _ChainIdx();
+          fieldIdxs[fieldName] = chainIdx;
+        }
+
+        if (chainIdx.encodeIdx != null) {
+          encodeChain.removeAt(chainIdx.encodeIdx);
+        }
         
         _encodeField(fieldName, fieldInfo, metadata,
             encodeChain, mirror, mirror.type);
+
+        chainIdx.encodeIdx = encodeChain.length - 1;
         
         if (!mirror.isFinal) {
+
+          if (chainIdx.decodeIdx != null) {
+            decodeChain.removeAt(chainIdx.decodeIdx);
+          }
+
           _decodeField(fieldName, fieldInfo, metadata, 
               decodeChain, mirror, mirror.type);
+
+          chainIdx.decodeIdx = decodeChain.length - 1;
+
         }
           
       }
@@ -429,15 +454,42 @@ void _buildChain(ClassMirror clazz, List decodeChain,
         var fieldName = MirrorSystem.getName(mirror.simpleName);
         if (mirror.isGetter) {
           fields[fieldName] = new _FieldData(mirror.simpleName, metadata);
-          
+
+          var chainIdx = fieldIdxs[fieldName];
+          if (chainIdx == null) {
+            chainIdx = new _ChainIdx();
+            fieldIdxs[fieldName] = chainIdx;
+          }
+
+          if (chainIdx.encodeIdx != null) {
+            encodeChain.removeAt(chainIdx.encodeIdx);
+          }
+
           TypeMirror fieldType = mirror.returnType;
           _encodeField(fieldName, fieldInfo, metadata,
-              encodeChain, mirror, fieldType);       
+              encodeChain, mirror, fieldType);
+
+          chainIdx.encodeIdx = encodeChain.length - 1;
+
         } else if (mirror.isSetter) {
           fieldName = fieldName.substring(0, fieldName.length - 1);
+
+          var chainIdx = fieldIdxs[fieldName];
+          if (chainIdx == null) {
+            chainIdx = new _ChainIdx();
+            fieldIdxs[fieldName] = chainIdx;
+          }
+
+          if (chainIdx.decodeIdx != null) {
+            decodeChain.removeAt(chainIdx.decodeIdx);
+          }
+
           TypeMirror fieldType = mirror.parameters[0].type;
           _decodeField(fieldName, fieldInfo, metadata, 
               decodeChain, mirror, fieldType);
+
+          chainIdx.decodeIdx = decodeChain.length - 1;
+
         }
       }
       
@@ -509,5 +561,12 @@ _DynamicValidator _createValidator([Type type, bool parseAnnotations = false]) {
     });
   }
   return validator;
+}
+
+class _ChainIdx {
+
+  int decodeIdx;
+  int encodeIdx;
+
 }
 

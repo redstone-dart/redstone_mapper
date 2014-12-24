@@ -165,7 +165,9 @@ class StaticMapperGenerator extends Transformer with ResolverTransformer {
   
   dynamic _scannClass(ClassElement clazz, 
                       [List<_FieldInfo> fields, 
-                       Set<ClassElement> cache]) {
+                       Set<ClassElement> cache,
+                       Map<String, int> fieldIdxs,
+                       Map<String, int> accessorIdxs]) {
     
     bool rootType = false;
     if (fields == null) {
@@ -175,24 +177,31 @@ class StaticMapperGenerator extends Transformer with ResolverTransformer {
     if (cache == null) {
       cache = new Set();
     }
+    if (fieldIdxs == null) {
+      fieldIdxs = {};
+    }
+    if (accessorIdxs == null) {
+      accessorIdxs = {};
+    }
+
     cache.add(clazz);
     
     if (clazz.supertype != null && clazz.supertype.element != objectType && 
           !cache.contains(clazz.supertype.element)) {
-      _scannClass(clazz.supertype.element, fields, cache);
+      _scannClass(clazz.supertype.element, fields, cache, fieldIdxs, accessorIdxs);
     }
     
     clazz.interfaces.where((i) => !cache.contains(i.element)).forEach((i) {
-      _scannClass(i.element, fields, cache);
+      _scannClass(i.element, fields, cache, fieldIdxs, accessorIdxs);
     });
       
     clazz.fields
       .where((f) => !f.isStatic && !f.isPrivate)
-      .forEach((f) => _scannField(fields, f));
+      .forEach((f) => _scannField(fields, f, fieldIdxs));
     
     clazz.accessors
       .where((p) => !p.isStatic && !p.isPrivate)
-      .forEach((p) => _scannAccessor(fields, p));
+      .forEach((p) => _scannAccessor(fields, p, accessorIdxs));
     
     if (rootType) {
       if (fields.isNotEmpty) {
@@ -287,33 +296,55 @@ class StaticMapperGenerator extends Transformer with ResolverTransformer {
     return new _FieldMetadata(fieldExp, exps);
   }
   
-  void _scannField(List<_FieldInfo> fields, FieldElement element) {
+  void _scannField(List<_FieldInfo> fields, FieldElement element, Map<String, int> fieldIdxs) {
     var field = element.metadata
                   .firstWhere((f) => _isFieldConstructor(f), orElse: () => null);
     if (field != null) {
+      var idx = fieldIdxs[element.displayName];
+      if (idx != null) {
+        fields.removeAt(idx);
+      }
+
       var metadata = _buildMetadata(element);
       fields.add(new _FieldInfo(element.displayName, element.type, 
                                 metadata, canDecode: !element.isFinal));
+
+      fieldIdxs[element.displayName] = fields.length - 1;
     }
   }
   
   void _scannAccessor(List<_FieldInfo> fields, 
-                      PropertyAccessorElement element) {
+                      PropertyAccessorElement element,
+                      Map<String, int> accessorIdxs) {
     var field = element.metadata
                   .firstWhere((f) => _isFieldConstructor(f), orElse: () => null);
     if (field != null) {
       var metadata = _buildMetadata(element);
       var name = element.displayName;
       var type;
+      var idx;
       if (element.isSetter) {
         name = name.substring(0, name.length - 1);
+
+        idx = accessorIdxs[name];
+        if (idx != null) {
+          fields.removeAt(idx);
+        }
+
         type = element.type.normalParameterTypes[0];
       } else {
+        idx = accessorIdxs[name];
+        if (idx != null) {
+          fields.removeAt(idx);
+        }
+
         type = element.returnType;
       }
       fields.add(new _FieldInfo(element.displayName, type, metadata,
                                 canDecode: element.isSetter,
                                 canEncode: element.isGetter));
+
+      accessorIdxs[name] = fields.length - 1;
     }
   }
   
