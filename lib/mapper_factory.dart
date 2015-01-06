@@ -175,7 +175,8 @@ final Map<Type, _DynamicMapper> _cache = {
   double: const _DynamicMapper.notEncodable(),
   num: const _DynamicMapper.notEncodable(),
   bool: const _DynamicMapper.notEncodable(),
-  Object: const _DynamicMapper.notEncodable()
+  Object: const _DynamicMapper.notEncodable(),
+  Null: const _DynamicMapper.notEncodable()
 };
 
 class _DefaultDecoder {
@@ -339,6 +340,9 @@ _DynamicMapper _getOrCreateMapper(Type type) {
     } else {
     
       var decoder = (data, fieldDecoder, typeCodecs, [fieldType]) {
+        if (data == null) {
+          return null;
+        }
         if (data is List) {
           return const _DynamicMapper.list().decoder(data, fieldDecoder, 
               typeCodecs, type);
@@ -363,6 +367,9 @@ _DynamicMapper _getOrCreateMapper(Type type) {
         return mirror.reflectee;
       };
       var encoder = (obj, fieldEncoder, typeCodecs) {
+        if (obj == null) {
+          return null;
+        }
         var data = {};
         try {
           var mirror = reflect(obj);

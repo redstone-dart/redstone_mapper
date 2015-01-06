@@ -14,6 +14,7 @@ import 'package:redstone_mapper/mapper.dart';
  */ 
 void staticBootstrapMapper(Map<Type, TypeInfo> types) {
   _staticTypeInfo = types;
+
   configure(_getOrCreateMapper, _createValidator);
 }
 
@@ -51,7 +52,15 @@ class FieldWrapper {
 }
 
 Map<Type, TypeInfo> _staticTypeInfo = const {};
-Map<Type, _StaticMapper> _cache = {};
+Map<Type, _StaticMapper> _cache = {
+  String: const _StaticMapper.notEncodable(),
+  int: const _StaticMapper.notEncodable(),
+  double: const _StaticMapper.notEncodable(),
+  num: const _StaticMapper.notEncodable(),
+  bool: const _StaticMapper.notEncodable(),
+  Object: const _StaticMapper.notEncodable(),
+  Null: const _StaticMapper.notEncodable()
+};
 
 class _StaticMapper implements Mapper {
   
@@ -209,6 +218,9 @@ _StaticMapper _getOrCreateMapper(Type type,
       if (typeInfo != null) {
         
         var decoder = (data, fieldDecoder, typeCodecs, [fieldType]) {
+          if (data == null) {
+            return data;
+          }
           if (data is List) {
             return new _StaticMapper.list().decoder(data, fieldDecoder, 
                 typeCodecs, type);
@@ -222,6 +234,9 @@ _StaticMapper _getOrCreateMapper(Type type,
         };
         
         var encoder = (obj, fieldEncoder, typeCodecs) {
+          if (obj == null) {
+            return null;
+          }
           try {
             return typeInfo.encoder(obj, _getOrCreateMapper, fieldEncoder, typeCodecs);
           } catch(e) {

@@ -9,6 +9,18 @@ installCommonTests() {
 
   group("Encode:", () {
 
+    test("Null value", () {
+
+      expect(encode(null), equals(null));
+
+    });
+
+    test("Core types", () {
+
+      expect(encode([1, 2, 3, 4]), equals([1, 2, 3, 4]));
+
+    });
+
     test("Simple object", () {
 
       var obj = createSimpleObj();
@@ -67,6 +79,18 @@ installCommonTests() {
   });
 
   group("Decode:", () {
+
+    test("Null value", () {
+
+      expect(decode(null, TestObj), equals(null));
+
+    });
+
+    test("Core types", () {
+
+      expect(decode([1, 2, 3, 4], int), equals([1, 2, 3, 4]));
+
+    });
 
     test("Simple object", () {
 
