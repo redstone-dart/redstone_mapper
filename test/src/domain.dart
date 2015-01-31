@@ -66,12 +66,16 @@ class TestComplexObj extends TestObj {
 
   @Field()
   SpecializedProperty property;
+  
+  @Field()
+  Map<int, TestInnerObj> mapInnerObjs;
 
   operator == (other) {
     return other is TestComplexObj &&
     super==(other) &&
     other.innerObj == innerObj &&
-    const ListEquality().equals(other.innerObjs, innerObjs);
+    const ListEquality().equals(other.innerObjs, innerObjs) &&
+    const MapEquality().equals(other.mapInnerObjs, mapInnerObjs);
   }
 
   int get hashCode => toString().hashCode;
@@ -80,6 +84,7 @@ class TestComplexObj extends TestObj {
     ${super.toString()}
     innerObj: $innerObj
     innerObjs: $innerObjs
+    mapInnerObjs: $mapInnerObjs
     property: $property
   ''';
 }
@@ -157,6 +162,7 @@ TestComplexObj createComplexObj() {
     ..value4 = dateTest
     ..innerObj = innerObj1
     ..innerObjs = [innerObj2, innerObj3]
+    ..mapInnerObjs = {1: innerObj1, 2: innerObj2, 3: innerObj3}
     ..property = p;
   return obj;
 }

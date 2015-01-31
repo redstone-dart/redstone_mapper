@@ -55,6 +55,11 @@ installCommonTests() {
               {"innerObjValue": "obj2"},
               {"innerObjValue": "obj3"}
           ],
+          "mapInnerObjs": {
+            1: {"innerObjValue": "obj1"},
+            2: {"innerObjValue": "obj2"},
+            3: {"innerObjValue": "obj3"}
+          },
           "property": {"value": "specializedProperty"}
       }));
     });
@@ -125,6 +130,11 @@ installCommonTests() {
               {"innerObjValue": "obj2"},
               {"innerObjValue": "obj3"}
           ],
+          "mapInnerObjs": {
+            1: {"innerObjValue": "obj1"},
+            2: {"innerObjValue": "obj2"},
+            3: {"innerObjValue": "obj3"}
+          },
           "property": {"value": "specializedProperty"}
       };
 
@@ -147,6 +157,11 @@ installCommonTests() {
               {"innerObjValue": "obj2"},
               {"innerObjValue": "obj3"}
           ],
+          "mapInnerObjs": {
+            1: {"innerObjValue": "obj1"},
+            2: {"innerObjValue": "obj2"},
+            3: {"innerObjValue": "obj3"}
+          },
           "property": {"value": "specializedProperty"}
       };
 

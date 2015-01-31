@@ -211,7 +211,7 @@ class _MapDecoder {
       throw new MapperException("Expecting ${type}, found ${data.runtimeType}");
     }
     
-    ClassMirror clazz = reflectClass(type);
+    TypeMirror clazz = reflectType(type);
     if (clazz.isOriginalDeclaration) {
       return data;
     }

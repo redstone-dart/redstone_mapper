@@ -1,3 +1,6 @@
+## v0.1.12
+* Fix decode of Map values
+
 ## v0.1.11
 * Fix: decode and encode of null value now returns null, instead of throwing an error.
 * Fix: directly encoding or decoding core types (for example: decode(42, int);) does not work when compiled to javascript
