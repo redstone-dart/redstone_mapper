@@ -441,7 +441,7 @@ class _TypeCodecGenerator {
     String typePrefix = "";
     String typeName;
         
-    if (type.element != null) {
+    if (type.element != null && !type.isDynamic) {
       typePrefix = usedLibs.resolveLib(type.element.library);
     }
     if (typePrefix.isNotEmpty) {

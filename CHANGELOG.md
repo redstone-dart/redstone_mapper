@@ -1,3 +1,6 @@
+## v0.1.13
+* Fix transformer crash when encoding a Map or List without type parameters.
+
 ## v0.1.12
 * Fix decode of Map values
 
