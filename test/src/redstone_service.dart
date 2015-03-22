@@ -1,12 +1,11 @@
 library redstone_service;
 
-import 'package:redstone/server.dart' as app;
-import 'package:redstone_mapper/mapper.dart';
+import 'package:redstone/redstone.dart';
 import 'package:redstone_mapper/plugin.dart';
 
 import 'domain.dart';
 
-@app.Route("/service", methods: const [app.POST])
+@Route("/service", methods: const [POST])
 @Encode()
 service(@Decode() User user) {
   var resp = [];
@@ -16,7 +15,7 @@ service(@Decode() User user) {
   return resp;
 }
 
-@app.Route("/service_list", methods: const [app.POST])
+@Route("/service_list", methods: const [POST])
 @Encode()
 serviceList(@Decode() List<User> users) {
   return users;

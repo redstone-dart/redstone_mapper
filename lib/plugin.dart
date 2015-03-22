@@ -1,7 +1,8 @@
 library redstone_mapper_plugin;
 
-import 'package:redstone/server.dart' as app;
+import 'package:redstone/redstone.dart';
 import 'package:shelf/shelf.dart' as shelf;
+import 'package:di/di.dart';
 
 import 'package:redstone_mapper/database.dart';
 import 'package:redstone_mapper/mapper.dart';
@@ -30,7 +31,7 @@ class Decode {
   final List<String> from;
   final bool fromQueryParams;
   
-  const Decode({List<String> this.from: const [app.JSON], 
+  const Decode({List<String> this.from: const [JSON], 
                 bool this.fromQueryParams: false});
   
 }
@@ -80,37 +81,40 @@ class Encode {
  *      }
  * 
  */ 
-app.RedstonePlugin getMapperPlugin([DatabaseManager db, String dbPathPattern = r'/.*']) {
+RedstonePlugin getMapperPlugin([DatabaseManager db, String dbPathPattern = r'/.*']) {
   
-  return (app.Manager manager) {
+  return (Manager manager) {
     
     bootstrapMapper();
     
     if (db != null) {
       
-      var conf = new app.Interceptor.conf(dbPathPattern);
-      var dbInterceptor = (_) {
-        db.getConnection().then((conn) {
-          app.request.attributes["dbConn"] = conn;
-          app.chain.next(() {
-            db.closeConnection(conn, error: app.chain.error);
-          });
-        });
+      var conf = new Interceptor(dbPathPattern);
+      var dbInterceptor = (Injector injector, Request request) async {
+        var conn = await db.getConnection();
+        request.attributes["dbConn"] = conn;
+        return await chain.next();
       };
+      
       manager.addInterceptor(conf, "database connection manager", 
           dbInterceptor);
       
     }
     
-    manager.addParameterProvider(Decode, (metadata, paramType, 
-        handlerName, paramName, request, injector) {
+    manager.addParameterProvider(Decode, (dynamic metadata, Type paramType,
+        String handlerName, String paramName, Request request, Injector injector) {
+      
       var data;
       if (metadata.fromQueryParams) {
-        data = request.queryParams;
+        var params = request.queryParameters;
+        data = {};
+        params.forEach((String k, List<String> v) {
+          data[k] = v[0];
+        });
       } else { 
         if (!metadata.from.contains(request.bodyType)) {
-          throw new app.RequestException(handlerName, 
-              "${request.bodyType} not supported for this handler");
+          throw new ErrorResponse(400, 
+              "$handlerName: ${request.bodyType} not supported for this handler");
         }
         data = request.body;
       }
@@ -118,8 +122,9 @@ app.RedstonePlugin getMapperPlugin([DatabaseManager db, String dbPathPattern = r
       try {
         return decode(data, paramType);
       } catch (e) {
-        throw new app.RequestException(handlerName, "Error parsing '$paramName' parameter: $e");
+        throw new ErrorResponse(400, "$handlerName: Error parsing '$paramName' parameter: $e");
       }
+      
     });
     
     manager.addResponseProcessor(Encode, (metadata, handlerName, 
