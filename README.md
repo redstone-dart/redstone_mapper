@@ -1,6 +1,6 @@
-# redstone_mapper
+# Redstone Mapper
 
-[![Build Status](https://drone.io/github.com/luizmineo/redstone_mapper/status.png)](https://drone.io/github.com/luizmineo/redstone_mapper/latest)
+[![Build Status](https://travis-ci.org/redstone-dart/redstone_mapper.svg)](https://travis-ci.org/redstone-dart/redstone_mapper)
 
 redstone_mapper is a set of utilities for handling common tasks in web applications, including:
 

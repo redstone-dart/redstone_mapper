@@ -1,0 +1,5 @@
+# Travis CI Support
+language: dart
+sudo: false
+script:
+- dart test/server/server_test.dart
