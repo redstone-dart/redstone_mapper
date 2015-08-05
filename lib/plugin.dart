@@ -25,15 +25,13 @@ import 'package:redstone_mapper/mapper_factory.dart';
  *     addUser(@Decode() User user) {
  *       ...
  *     }
- */ 
+ */
 class Decode {
-  
   final List<String> from;
   final bool fromQueryParams;
-  
-  const Decode({List<String> this.from: const [JSON], 
-                bool this.fromQueryParams: false});
-  
+
+  const Decode(
+      {List<String> this.from: const [JSON], bool this.fromQueryParams: false});
 }
 
 /**
@@ -48,11 +46,9 @@ class Decode {
  *       ...
  *     }
  * 
- */ 
+ */
 class Encode {
-  
   const Encode();
-  
 }
 
 /**
@@ -80,30 +76,27 @@ class Encode {
  * 
  *      }
  * 
- */ 
-RedstonePlugin getMapperPlugin([DatabaseManager db, String dbPathPattern = r'/.*']) {
-  
+ */
+RedstonePlugin getMapperPlugin(
+    [DatabaseManager db, String dbPathPattern = r'/.*']) {
   return (Manager manager) {
-    
     bootstrapMapper();
-    
+
     if (db != null) {
-      
-      var conf = new Interceptor(dbPathPattern);
-      var dbInterceptor = (Injector injector, Request request) async {
+
+      manager.addInterceptor(new Interceptor(dbPathPattern), "database connection manager",
+          (Injector injector, Request request) async {
         var conn = await db.getConnection();
         request.attributes["dbConn"] = conn;
-        return await chain.next();
-      };
-      
-      manager.addInterceptor(conf, "database connection manager", 
-          dbInterceptor);
-      
+        var resp = await chain.next();
+        db.closeConnection(conn, error: chain.error);
+        return resp;
+      });
     }
-    
+
     manager.addParameterProvider(Decode, (dynamic metadata, Type paramType,
-        String handlerName, String paramName, Request request, Injector injector) {
-      
+        String handlerName, String paramName, Request request,
+        Injector injector) {
       var data;
       if (metadata.fromQueryParams) {
         var params = request.queryParameters;
@@ -111,32 +104,29 @@ RedstonePlugin getMapperPlugin([DatabaseManager db, String dbPathPattern = r'/.*
         params.forEach((String k, List<String> v) {
           data[k] = v[0];
         });
-      } else { 
+      } else {
         if (!metadata.from.contains(request.bodyType)) {
-          throw new ErrorResponse(400, 
+          throw new ErrorResponse(400,
               "$handlerName: ${request.bodyType} not supported for this handler");
         }
         data = request.body;
       }
-      
+
       try {
         return decode(data, paramType);
       } catch (e) {
-        throw new ErrorResponse(400, "$handlerName: Error parsing '$paramName' parameter: $e");
+        throw new ErrorResponse(
+            400, "$handlerName: Error parsing '$paramName' parameter: $e");
       }
-      
     });
-    
-    manager.addResponseProcessor(Encode, (metadata, handlerName, 
-        response, injector) {
-      
+
+    manager.addResponseProcessor(Encode,
+        (metadata, handlerName, response, injector) {
       if (response == null || response is shelf.Response) {
         return response;
       }
-      
+
       return encode(response);
-      
     }, includeGroups: true);
   };
-  
 }
