@@ -8,6 +8,8 @@ import 'package:redstone_mapper/database.dart';
 import 'package:redstone_mapper/mapper.dart';
 import 'package:redstone_mapper/mapper_factory.dart';
 
+import 'dart:mirrors' as mirrors;
+
 /**
  * An annotation to define a target parameter.
  * 
@@ -115,8 +117,13 @@ RedstonePlugin getMapperPlugin(
       try {
         return decode(data, paramType);
       } catch (e) {
-        throw new ErrorResponse(
-            400, "$handlerName: Error parsing '$paramName' parameter: $e");
+        try {
+          return mirrors.reflectClass(paramType).newInstance(#fromStringMap, [data]).reflectee;
+        }
+        catch (e2) {
+          throw new ErrorResponse(
+              400, "$handlerName: Error parsing '$paramName' parameter: $e\n\nError using 'fromJson' constructor: $e2");
+        }
       }
     });
 
