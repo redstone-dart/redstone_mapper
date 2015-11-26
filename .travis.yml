@@ -1,5 +1,7 @@
 # Travis CI Support
 language: dart
 sudo: false
-script:
-- dart test/server/server_test.dart
+dart:
+  - stable
+  - dev
+with_content_shell: true

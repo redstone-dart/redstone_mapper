@@ -9,7 +9,7 @@ import 'domain.dart';
 @Encode()
 service(@Decode() User user) {
   var resp = [];
-  for(var i = 0; i < 3; i++) {
+  for (var i = 0; i < 3; i++) {
     resp.add(user);
   }
   return resp;

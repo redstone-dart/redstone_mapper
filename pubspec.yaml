@@ -1,15 +1,17 @@
 name: redstone_mapper
 version: 0.2.0-beta.1+1
-author: Luiz Mineo <luiz.mineo@gmail.com>
+authors:
+- Luiz Mineo <luiz.mineo@gmail.com>
+- Joel Trottier-Hebert <iamquebecois@gmail.com>
 description: A mapper plugin for Redstone.dart
 homepage: http://redstonedart.org
 environment:
   sdk: '>=1.9.0-dev.9.1 <2.0.0'
 dependencies:
-  redstone: '>=0.6.0-beta.1 <0.7.0'
-  analyzer: '>=0.15.6 <0.26.0'
+  redstone: "^0.6.1"
+  analyzer: "^0.26.3"
   code_transformers: '>=0.1.6 <0.3.0'
 dev_dependencies:
-  unittest: '>=0.11.0+3 <0.12.0'
+  test: "^0.12.6"
 transformers:
   - redstone_mapper
