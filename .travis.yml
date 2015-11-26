@@ -5,3 +5,4 @@ dart:
   - stable
   - dev
 with_content_shell: true
+script: pub run test -p vm,content-shell
