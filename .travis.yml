@@ -1,5 +1,8 @@
 # Travis CI Support
 language: dart
 sudo: false
-script:
-- dart test/server/server_test.dart
+dart:
+  - stable
+  - dev
+with_content_shell: true
+script: export DISPLAY=:99.0 && sh -e /etc/init.d/xvfb start && pub run test -p vm,content-shell
