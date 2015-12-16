@@ -1,3 +1,6 @@
+## v0.2.0-beta.1+2
+* Updated dependency to work with the new code_transformers version. di.dart still depends on a old one, hence the git dependency. 
+
 ## v0.1.13
 * Fix transformer crash when encoding a Map or List without type parameters.
 
