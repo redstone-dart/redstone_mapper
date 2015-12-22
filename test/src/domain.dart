@@ -151,3 +151,31 @@ TestComplexObj createComplexObj() {
     ..property = p;
   return obj;
 }
+
+abstract class Identifiable {
+  @Field()
+  String id;
+}
+
+abstract class Nameable {
+  @Field()
+  String username;
+
+  @Field()
+  String password;
+}
+
+class MixedUser extends Object with Identifiable, Nameable {
+  @override
+  toString() => '''
+    id:       $id
+    username: $username
+    password: $password''';
+}
+
+MixedUser createMixedUser() {
+  return new MixedUser()
+      ..id       = "me"
+      ..username = "Alice"
+      ..password = "thereisnone";
+}

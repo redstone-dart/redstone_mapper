@@ -327,8 +327,8 @@ _DynamicMapper _getOrCreateMapper(Type type) {
       return mapper;
     }
     
-    var decodeChain = [];
-    var encodeChain = [];
+    var decodeChain = {};
+    var encodeChain = {};
     var fields = {};
     
     _buildChain(clazz, decodeChain, encodeChain, fields);
@@ -357,7 +357,7 @@ _DynamicMapper _getOrCreateMapper(Type type) {
         }
         
         try {
-          decodeChain.forEach((f) => f(data, mirror, fieldDecoder, typeCodecs));
+          decodeChain.values.forEach((f) => f(data, mirror, fieldDecoder, typeCodecs));
         } on MapperException catch(e) {
           throw e..append(new StackElement(true, type.toString()));
         } catch(e) {
@@ -373,7 +373,7 @@ _DynamicMapper _getOrCreateMapper(Type type) {
         var data = {};
         try {
           var mirror = reflect(obj);
-          encodeChain.forEach((f) => f(data, mirror, fieldEncoder, typeCodecs));
+          encodeChain.values.forEach((f) => f(data, mirror, fieldEncoder, typeCodecs));
         } on MapperException catch(e) {
           throw e..append(new StackElement(true, type.toString()));
         } catch(e) {
@@ -391,127 +391,70 @@ _DynamicMapper _getOrCreateMapper(Type type) {
   return mapper;
 }
 
-void _buildChain(ClassMirror clazz, List decodeChain, 
-                 List encodeChain, Map<String, _FieldData> fields,
-                 [Map<String, _ChainIdx> fieldIdxs]) {
+void _buildChain(ClassMirror clazz, Map decodeChain, Map encodeChain,
+                 Map<String, _FieldData> fields) {
 
-  if (fieldIdxs == null) {
-    fieldIdxs = {};
-  }
-  
   if(clazz.superclass != null && clazz.superclass.reflectedType != Object) {
-    _buildChain(clazz.superclass, decodeChain, encodeChain, fields, fieldIdxs);
+    _buildChain(clazz.superclass, decodeChain, encodeChain, fields);
   }
   
-  clazz.superinterfaces.forEach((interface) =>
-      _buildChain(interface, decodeChain, encodeChain, fields, fieldIdxs));
+  clazz.superinterfaces.forEach((interface) {
+    _buildChain(interface, decodeChain, encodeChain, fields);
+  });
   
   clazz.declarations.forEach((name, mirror) {
-    
     if (mirror is VariableMirror && !mirror.isStatic && !mirror.isPrivate) {
-      
       var metadata = mirror.metadata.map((m) => m.reflectee).toList(growable: false);
       var fieldInfo = metadata.
           firstWhere((o) => o is Field, orElse: () => null) as Field;
       
       if (fieldInfo != null) {
-         
         var fieldName = MirrorSystem.getName(mirror.simpleName);
         fields[fieldName] = new _FieldData(mirror.simpleName, metadata);
 
-        var chainIdx = fieldIdxs[fieldName];
-        if (chainIdx == null) {
-          chainIdx = new _ChainIdx();
-          fieldIdxs[fieldName] = chainIdx;
-        }
-
-        if (chainIdx.encodeIdx != null) {
-          encodeChain.removeAt(chainIdx.encodeIdx);
-        }
-        
         _encodeField(fieldName, fieldInfo, metadata,
             encodeChain, mirror, mirror.type);
 
-        chainIdx.encodeIdx = encodeChain.length - 1;
-        
         if (!mirror.isFinal) {
-
-          if (chainIdx.decodeIdx != null) {
-            decodeChain.removeAt(chainIdx.decodeIdx);
-          }
-
-          _decodeField(fieldName, fieldInfo, metadata, 
+          _decodeField(fieldName, fieldInfo, metadata,
               decodeChain, mirror, mirror.type);
-
-          chainIdx.decodeIdx = decodeChain.length - 1;
-
         }
-          
       }
-      
     } else if (mirror is MethodMirror && 
                !mirror.isStatic && !mirror.isPrivate) {
-      
+
       var metadata = mirror.metadata.map((m) => m.reflectee).toList(growable: false);
       var fieldInfo = metadata.
           firstWhere((o) => o is Field, orElse: () => null) as Field;
       
       if (fieldInfo != null) {
-
         var fieldName = MirrorSystem.getName(mirror.simpleName);
         if (mirror.isGetter) {
           fields[fieldName] = new _FieldData(mirror.simpleName, metadata);
-
-          var chainIdx = fieldIdxs[fieldName];
-          if (chainIdx == null) {
-            chainIdx = new _ChainIdx();
-            fieldIdxs[fieldName] = chainIdx;
-          }
-
-          if (chainIdx.encodeIdx != null) {
-            encodeChain.removeAt(chainIdx.encodeIdx);
-          }
 
           TypeMirror fieldType = mirror.returnType;
           _encodeField(fieldName, fieldInfo, metadata,
               encodeChain, mirror, fieldType);
 
-          chainIdx.encodeIdx = encodeChain.length - 1;
-
         } else if (mirror.isSetter) {
           fieldName = fieldName.substring(0, fieldName.length - 1);
-
-          var chainIdx = fieldIdxs[fieldName];
-          if (chainIdx == null) {
-            chainIdx = new _ChainIdx();
-            fieldIdxs[fieldName] = chainIdx;
-          }
-
-          if (chainIdx.decodeIdx != null) {
-            decodeChain.removeAt(chainIdx.decodeIdx);
-          }
 
           TypeMirror fieldType = mirror.parameters[0].type;
           _decodeField(fieldName, fieldInfo, metadata, 
               decodeChain, mirror, fieldType);
-
-          chainIdx.decodeIdx = decodeChain.length - 1;
-
         }
       }
-      
     }
-    
   });
 }
 
-void _decodeField(String fieldName, Field fieldInfo, List metadata, 
-                  List decodeChain, DeclarationMirror mirror, TypeMirror fieldType) {
+void _decodeField(String fieldName, Field fieldInfo, List metadata,
+                  Map decodeChain, DeclarationMirror mirror, TypeMirror fieldType) {
   
   var type = fieldType.reflectedType;
   var name = new Symbol(fieldName);
-  
-  decodeChain.add((data, InstanceMirror obj, FieldDecoder fieldDecoder, 
+
+  decodeChain[fieldName] = ((data, InstanceMirror obj, FieldDecoder fieldDecoder,
                    Map<Type, Codec> typeCodecs) {
     _DynamicMapper mapper = _getOrCreateMapper(type);
     try {
@@ -534,10 +477,10 @@ void _decodeField(String fieldName, Field fieldInfo, List metadata,
 }
 
 void _encodeField(String fieldName, Field fieldInfo, List metadata,
-                  List encodeChain, DeclarationMirror mirror, TypeMirror fieldType) {
+                  Map encodeChain, DeclarationMirror mirror, TypeMirror fieldType) {
 
   var type = fieldType.reflectedType;
-  encodeChain.add((Map data, InstanceMirror obj, FieldEncoder fieldEncoder, 
+  encodeChain[fieldName] = ((Map data, InstanceMirror obj, FieldEncoder fieldEncoder,
                    Map<Type, Codec> typeCodecs) {
     var value = obj.getField(mirror.simpleName).reflectee;
     if (value != null) {
@@ -568,12 +511,5 @@ _DynamicValidator _createValidator([Type type, bool parseAnnotations = false]) {
     });
   }
   return validator;
-}
-
-class _ChainIdx {
-
-  int decodeIdx;
-  int encodeIdx;
-
 }
 
