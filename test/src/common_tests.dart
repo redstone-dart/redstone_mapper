@@ -57,6 +57,21 @@ installCommonTests() {
           }));
     });
 
+    test("Mixin", () {
+      var obj = createMixedUser();
+
+      var data = encode(obj);
+
+      expect(
+          data,
+          equals({
+            "id":       "me",
+            "username": "Alice",
+            "password": "thereisnone",
+          })
+      );
+    });
+
     test("List", () {
       var list = [createSimpleObj(), createSimpleObj()];
 
@@ -122,6 +137,23 @@ installCommonTests() {
       var decoded = decode(data, TestComplexObj);
 
       expect(decoded, equals(obj));
+    });
+
+    test("Mixin", () {
+      var obj = createMixedUser();
+
+      var data = {
+        "id":       "me",
+        "username": "Alice",
+        "password": "thereisnone",
+      };
+
+      var decoded = decode(data, MixedUser);
+
+      // TODO Equality not supported for mixed class
+      // expect(decoded, equals(obj));
+      expect(decoded.runtimeType, equals(obj.runtimeType));
+      expect(decoded.toString(), equals(obj.toString()));
     });
 
     test("List", () {
