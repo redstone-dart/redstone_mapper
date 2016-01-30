@@ -11,9 +11,8 @@ dependencies:
   redstone:
     git: https://github.com/redstone-dart/redstone.git
   analyzer: "^0.27.0"
-  code_transformers: "^0.3.1"
-  di:
-    git: https://github.com/Pacane/di.dart.git
+  code_transformers: ">= 0.3.1 <= 0.4.0"
+  di: "^3.3.6"
 dev_dependencies:
   test: "^0.12.6"
 transformers:
