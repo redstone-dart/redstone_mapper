@@ -17,3 +17,5 @@ dev_dependencies:
   test: "^0.12.6"
 transformers:
   - redstone_mapper
+  - test/pub_serve:
+      $include: test/client_test.dart
