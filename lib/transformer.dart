@@ -215,9 +215,9 @@ class StaticMapperGenerator extends Transformer with ResolverTransformer {
       if (fields.isNotEmpty) {
         var key = usedLibs.resolveLib(clazz.library);
         if (key.isNotEmpty) {
-          key = "$key.$clazz";
+          key = "$key.${clazz.displayName}";
         } else {
-          key = "$clazz";
+          key = "${clazz.displayName}";
         }
         types[key] =
             new _TypeCodecGenerator(collectionType, usedLibs, key, fields);

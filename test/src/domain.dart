@@ -152,12 +152,17 @@ TestComplexObj createComplexObj() {
   return obj;
 }
 
-abstract class Identifiable {
+class Dummy {
+  @Field()
+  num dummy;
+}
+
+class Identifiable {
   @Field()
   String id;
 }
 
-abstract class Nameable {
+class Nameable {
   @Field()
   String username;
 
@@ -165,7 +170,7 @@ abstract class Nameable {
   String password;
 }
 
-class MixedUser extends Object with Identifiable, Nameable {
+class MixedUser extends Dummy with Identifiable, Nameable {
   @override
   toString() => '''
     id:       $id
