@@ -211,13 +211,15 @@ class StaticMapperGenerator extends Transformer with ResolverTransformer {
         .where((p) => !p.isStatic && !p.isPrivate)
         .forEach((p) => _scannAccessor(fields, p, accessorIdxs));
 
+    var className = "$clazz".replaceFirst(new RegExp(r'(abstract )?class '), '');
+
     if (rootType) {
       if (fields.isNotEmpty) {
         var key = usedLibs.resolveLib(clazz.library);
         if (key.isNotEmpty) {
-          key = "$key.$clazz";
+          key = "$key.$className";
         } else {
-          key = "$clazz";
+          key = "$className";
         }
         types[key] =
             new _TypeCodecGenerator(collectionType, usedLibs, key, fields);
