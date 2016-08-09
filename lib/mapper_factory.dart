@@ -465,7 +465,9 @@ void _decodeField(String fieldName, Field fieldInfo, List metadata,
           value = typeCodec.decode(value);
         }
         value = mapper.decoder(value, fieldDecoder, typeCodecs, type);
-        obj.setField(name, value);
+        if(value is! IgnoreValue) {
+          obj.setField(name, value);
+        }
       }
     } on MapperException catch(e) {
       throw e..append(new StackElement(false, fieldName));

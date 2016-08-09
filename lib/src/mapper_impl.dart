@@ -1,50 +1,66 @@
 part of redstone_mapper;
 
-final _defaultFieldDecoder = (Object encodedData, String fieldName, 
-                              Field fieldInfo, List metadata) {
-  var name = fieldInfo.view != null ? fieldInfo.view : fieldName;
-  return (encodedData as Map)[name];
+final _defaultFieldDecoder =
+    (Object encodedData, String fieldName, Field fieldInfo, List metadata) {
+  String lName = fieldName;
+
+  if (fieldInfo.view is String) {
+    if (fieldInfo.view.isEmpty) {
+      return ignoreValue;
+    }
+
+    lName = fieldInfo.view;
+  }
+
+  return (encodedData as Map)[lName];
 };
 
-final _defaultFieldEncoder = (Map encodedData, String fieldName, 
-                              Field fieldInfo, List metadata, Object value) {
-  if (value != null) {
-    var name = fieldInfo.view != null ? fieldInfo.view : fieldName;
-    encodedData[name] = value;
+final _defaultFieldEncoder = (Map encodedData, String fieldName,
+    Field fieldInfo, List metadata, Object value) {
+  if (value == null) {
+    return;
   }
+
+  String lName = fieldName;
+
+  if (fieldInfo.view is String) {
+    if (fieldInfo.view.isEmpty) {
+      return;
+    }
+
+    lName = fieldInfo.view;
+  }
+
+  encodedData[lName] = value;
 };
 
 class _TypeDecoder extends Converter {
-  
   final Type type;
   final FieldDecoder fieldDecoder;
   final Map<Type, Codec> typeCodecs;
-  
-  _TypeDecoder(this.fieldDecoder, {this.type, this.typeCodecs: const {} });
-  
+
+  _TypeDecoder(this.fieldDecoder, {this.type, this.typeCodecs: const {}});
+
   @override
   convert(input, [Type type]) {
     if (type == null) {
       type = this.type;
     }
-    
+
     Mapper mapper = _mapperFactory(type);
     return mapper.decoder(input, fieldDecoder, typeCodecs, type);
   }
-  
 }
 
 class _TypeEncoder extends Converter {
-  
   final Type type;
   final FieldEncoder fieldEncoder;
   final Map<Type, Codec> typeCodecs;
-  
-  _TypeEncoder(this.fieldEncoder, {this.type, this.typeCodecs: const {} });
-  
+
+  _TypeEncoder(this.fieldEncoder, {this.type, this.typeCodecs: const {}});
+
   @override
   convert(input, [Type type]) {
-    
     if (input is List) {
       return input.map((data) => _convert(data, type)).toList();
     } else if (input is Map) {
@@ -57,7 +73,7 @@ class _TypeEncoder extends Converter {
       return _convert(input, type);
     }
   }
-  
+
   _convert(input, Type type) {
     if (type == null) {
       if (this.type == null) {
@@ -66,9 +82,8 @@ class _TypeEncoder extends Converter {
         type = this.type;
       }
     }
-    
+
     Mapper mapper = _mapperFactory(type);
     return mapper.encoder(input, fieldEncoder, typeCodecs);
   }
-  
 }
