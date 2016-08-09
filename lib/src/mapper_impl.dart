@@ -1,37 +1,37 @@
 part of redstone_mapper;
 
 final _defaultFieldDecoder =
-    (Object encodedData, String fieldName, Field fieldInfo, List metadata) {
-  String lName = fieldName;
+    (final Object encodedData, final String fieldName, final Field fieldInfo, final List metadata) {
+  String name = fieldName;
 
   if (fieldInfo.view is String) {
     if (fieldInfo.view.isEmpty) {
       return ignoreValue;
     }
 
-    lName = fieldInfo.view;
+    name = fieldInfo.view;
   }
 
-  return (encodedData as Map)[lName];
+  return (encodedData as Map)[name];
 };
 
-final _defaultFieldEncoder = (Map encodedData, String fieldName,
-    Field fieldInfo, List metadata, Object value) {
+final _defaultFieldEncoder = (final Map encodedData, final String fieldName,
+    final Field fieldInfo, final List metadata, final Object value) {
   if (value == null) {
     return;
   }
 
-  String lName = fieldName;
+  String name = fieldName;
 
   if (fieldInfo.view is String) {
     if (fieldInfo.view.isEmpty) {
       return;
     }
 
-    lName = fieldInfo.view;
+    name = fieldInfo.view;
   }
 
-  encodedData[lName] = value;
+  encodedData[name] = value;
 };
 
 class _TypeDecoder extends Converter {
