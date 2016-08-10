@@ -1,3 +1,7 @@
+## v.0.2.0
+* Added annotation for ignoring value : `IgnoreValue`.
+* Bumped dependencies
+
 ## v0.2.0-beta.1+2
 * Updated dependency to work with the new code_transformers version. di.dart still depends on a old one, hence the git dependency. 
 
