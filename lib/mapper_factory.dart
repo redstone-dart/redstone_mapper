@@ -459,7 +459,7 @@ void _decodeField(String fieldName, Field fieldInfo, List metadata,
     _DynamicMapper mapper = _getOrCreateMapper(type);
     try {
       var value = fieldDecoder(data, fieldName, fieldInfo, metadata);
-      if (value != null) {
+      if (value != null && value is! IgnoreValue) {
         var typeCodec = typeCodecs[type];
         if (typeCodec != null) {
           value = typeCodec.decode(value);

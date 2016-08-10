@@ -1,6 +1,6 @@
 library domain_test;
 
-import 'package:collection/equality.dart';
+import 'package:collection/collection.dart';
 import 'package:redstone_mapper/mapper.dart';
 
 final dateTest = DateTime.parse("2014-08-11 12:23:00");
@@ -47,6 +47,32 @@ class TestObj {
     value3: $value3
     value4: $value4
     property: $property
+  ''';
+}
+
+class TestObjIgnore {
+  @Field()
+  String value1;
+
+  @Field(view: "value2")
+  int value2;
+
+  @Field(view: "")
+  bool value3;
+
+  bool operator ==(other) {
+    return other is TestObjIgnore &&
+        other.value1 == value1 &&
+        other.value2 == value2 &&
+        other.value3 == value3;
+  }
+
+  int get hashCode => toString().hashCode;
+
+  String toString() => '''
+    value1: $value1
+    value2: $value2
+    value3: $value3
   ''';
 }
 

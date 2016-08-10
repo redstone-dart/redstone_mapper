@@ -323,6 +323,12 @@ class GenericTypeCodec {
   
 }
 
+class IgnoreValue {
+  const IgnoreValue();
+}
+
+const ignoreValue = const IgnoreValue();
+
 /**
  * A [FieldDecoder] is a function which can extract field
  * values from an encoded data.

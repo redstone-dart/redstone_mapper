@@ -31,6 +31,22 @@ installCommonTests() {
           }));
     });
 
+    test("Ignore", () {
+      final bImpulse = new TestObjIgnore();
+      bImpulse.value1 = "str";
+      bImpulse.value2 = 10;
+      bImpulse.value3 = true;
+
+      var data = encode(bImpulse);
+
+      expect(
+          data,
+          equals({
+            "value1": "str",
+            "value2": 10,
+          }));
+    });
+
     test("Complex object", () {
       var obj = createComplexObj();
 
@@ -111,6 +127,23 @@ installCommonTests() {
       var decoded = decode(data, TestObj);
 
       expect(decoded, equals(obj));
+    });
+
+    test("Ignore value", () {
+      final bImpulse = new TestObjIgnore();
+      bImpulse.value1 = "str";
+      bImpulse.value2 = 10;
+      bImpulse.value3 = null;
+
+      var data = {
+        "value1": "str",
+        "value2": 10,
+        "value3": true,
+      };
+
+      var decoded = decode(data, TestObjIgnore);
+
+      expect(decoded, equals(bImpulse));
     });
 
     test("Complex object", () {
